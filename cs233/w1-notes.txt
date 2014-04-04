@@ -1,0 +1,9 @@
+Lamport:
+    Lamport's Strong Clock Condition provides a guarantee on event ordering
+    that respects communications that take place outside the usual process
+    communication channels. However, it may be sometimes desirable to have the
+    process clocks agree with the "real" time (NIST standard, e.g.) to some
+    extent in systems such as GPS. Does Lamport's algorithm make any such 
+    guarantees, and if not, how could it be modified so that it does?
+
+

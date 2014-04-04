@@ -1,0 +1,89 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\subsection*{1}
+Over such a thin shell of thickness $\ep$, we can assume the density function to be roughly constant. Then, evaluating the density function at any point $x$ with norm $r$ gives
+\[\frac{1}{(2\pi\sigma^2)^{d/2}}\exp\left(\frac{-1}{2}x^T\sigma^{-2}Ix\right)=\frac{1}{(2\pi\sigma^2)^{d/2}}\exp\left(\frac{-r^2}{2\sigma^2}\right)\]
+The hypervolume of the surface of the sphere is $S_dr^{d-1}$ (since it's a $d-1$-dimensional set), so the volume of the shell is approximately $\ep S_dr^{d-1}$. The integral of the density over the shell is approximately the volume of the shell times the value of the density, or 
+\[\ep\frac{S_dr^{d-1}}{(2\pi\sigma^2)^{d/2}}\exp\left(\frac{-r^2}{2\sigma^2}\right)\]
+To find the maximum of $f$, differentiate it by $r$ to obtain
+\[\frac{(d-1)S_dr^{d-2}}{(2\pi\sigma^2)^{d/2}}\exp\left(\frac{-r^2}{2\sigma^2}\right)-\frac{S_dr^d}{\sigma^2(2\pi\sigma^2)^{d/2}}\exp\left(\frac{-r^2}{2\sigma^2}\right)\]
+Setting this equal to $0$ and canceling gives
+\[0=(d-1)-\frac{r^2}{\sigma^2}\implies r=\pm\sigma\sqrt{d-1}\]
+Now, to check that this is a maximum, taking the second derivative gives us a common, positive multiplier times the following:
+\[(d-1)(d-2)-\frac{r^2}{\sigma^2}(2d-1)+\frac{r^4}{\sigma^4}\]
+Plugging in the previously obtained value for the stationary point, we have
+\[d^2-3d+2-(d-1)(2d-1)+(d-1)^2=-2d+2\]
+which becomes negative for large $d$. Thus, the point is a maximum, and we can estimate it by $\sigma\sqrt{d}$ for large $d$.
+%TODO: defn of p?
+\subsection{2}
+By the AM-GM inequality, we have $\frac{a+b}{2}\leq\sqrt{ab}$. Since the minimum of $a$ and $b$ is bounded above by the arithmetic mean, we thus also have $\min(a,b)\leq\sqrt{ab}$. 
+
+Now, we have that $P(\text{error})=P(\text{error}|Y=1)P(Y=1)+P(\text{error}|Y=2)P(Y=2)$. If we let $\Sigma_i$ be the set which the classifier classifies as $\h{Y}=i$, then the above is equal to 
+\[\int_{\Sigma_2}P(x|Y=1)P(Y=1)dx+\int_{\Sigma_1}P(x|Y=2)P(Y=2)dx\]
+Over $\Sigma_1$, we have that $P(x|Y=1)P(Y=1)\leq P(x|Y=2)P(Y=2)$ by the form of the Bayes classifier, and vice versa for $\Sigma_2$. Thus, the integrals above are bounded above by
+\begin{align*}
+&\frac{1}{2}\int_{\Sigma_2}P(x|Y=1)P(Y=1)+P(x|Y=2)P(Y=2)dx+ \frac{1}{2}\int_{\Sigma_1}P(x|Y=1)P(Y=1)+P(x|Y=2)P(Y=2)dx\\
+    &=\frac{1}{2}\int_{\rn^n}P(x|Y=1)P(Y=1)+P(x|Y=2)P(Y=2)dx
+\end{align*}
+if we replace the integrands with the average of the two integrands. Now, using the AM-GM inequality, we have that this is bounded above by 
+\begin{align*}
+\int_{\rn^n}\sqrt{P(x|Y=1)P(Y=1)P(x|Y=2)P(Y=2)}dx&=\sqrt{P(Y=1)P(Y=2)}\int_{\rn^n}\sqrt{P(x|Y=1)P(x|Y=2)}dx\\
+&\leq\frac{1}{2}\int_{\rn^n}\sqrt{P(x|Y=1)P(x|Y=2)}dx
+\end{align*}
+by another application of AM-GM to $\sqrt{P(Y=1)P(Y=2)}$, noting that the average of $P(Y=1)$ and $P(Y=2)$ is $\frac{1}{2}$.
+\subsection*{3}
+\ssn{a}
+The decision boundary is the point at which $P(x|Y=1)P(Y=1)=P(x|Y=2)P(Y=2)$, or $\pi_1\exp\left((x-\mu_1)^2/(2\sigma^2)\right)=\pi_2\exp\left((x-\mu_2)^2/(2\sigma^2)\right)$. Solving for $x$, we have 
+\[x^*=\frac{2\sigma\log\frac{\pi_1}{\pi_2}+\mu_2^2-\mu_1^2}{2(\mu_2-\mu_1)}\]
+\ssn{b}
+The error probability is
+\[\int_{-\infty}^{x^*}P(x|Y=2)P(Y=2)dx+\int_{x^*}^\infty P(x|Y=1)P(Y=1)dx=\pi_2\Phi\left(\frac{x^*-\mu_2}{\sigma}\right)+\pi_1-\pi_1\Phi\left(\frac{x^*-\mu_1}{\sigma}\right)\]
+
+Rewrite $x^*-\mu_2=\frac{2\sigma\log\frac{\pi_1}{\pi_2}}{2(\mu_2-\mu_1)}+\frac{\mu_2+\mu_1}{2}-\mu_2$. Then, dividing this by $\sigma$ produces a term constant in $\sigma$ and a term that goes to $-\infty$ as $\sigma\to0$. Thus, the $\pi_2$ term in the error vanishes. Similarly, $\frac{x^*-\mu_1}{\sigma}$ goes to $\infty$ as $\sigma\to0$, which means that the overall error term approaches $\pi_1-\pi_1=0$.
+\ssn{c}
+As $\pi_1\to0$, the log term in the decision boundary approaches $-\infty$, dragging the decision boundary with it, as all other things are fixed. In this case, always classifying things as class 2 would produce an error rate of $\pi_1$, which is known to be small.
+\ssn{d}
+{
+\nc{\lot}{L_{1,2}}
+\nc{\lto}{L_{2,1}}
+Let $S_1$ be the set of points in class $1$ and $S_2$ the same for class 2. If we predict class 1, the expected loss is $E_X(\lto P(Y=2|X)$. If we predict class 2, then it is $E_X(\lot P(Y=1|X))$. If we minimize this pointwise, we should predict class 1 when $\lto P(Y=2|X)\leq\lot P(Y=1|X)$, and class 2 otherwise.
+
+Rewriting the conditional probabilities, the prediction is then $\text{argmax}\left(\lto P(X|Y=2)P(Y=2), \lot P(X|Y=1)P(Y=1)\right)$. Setting these equal to find the boundary, we have
+\[\lto \pi_2\exp\left((x-\mu_2)^2/(2\sigma^2)\right)=\lot\pi_1\exp\left((x-\mu_1)^2/(2\sigma^2)\right)\]
+Solving for $x$, we obtain
+\[x^*=\frac{2\sigma\log\frac{\lot\pi_1}{\lto\pi_2}+\mu_2^2-\mu_1^2}{2(\mu_2-\mu_1)}\]
+Now, if we choose $\lot$ to be proportional to $\pi_1^{-1}$ and choose $\lto$ to be proportional to $\pi_2^{-1}$ (possibly with different constants), we will avoid the degeneracy problem.
+}
+\ssn{e}
+Using these values, we have that $x^*=1$, so plugging into the expression for the error rate from (b) gives $0.5\Phi(-1)+0.5-0.5\Phi(1)=0.1587$
+\end{document}
