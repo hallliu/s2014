@@ -12,6 +12,7 @@
 \newcommand{\openm}{\begin{pmatrix}}
 \newcommand{\closem}{\end{pmatrix}}
 \DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\im}{im}
 \DeclareMathOperator{\Span}{span}
@@ -83,7 +84,43 @@ Rewriting the conditional probabilities, the prediction is then $\text{argmax}\l
 Solving for $x$, we obtain
 \[x^*=\frac{2\sigma\log\frac{\lot\pi_1}{\lto\pi_2}+\mu_2^2-\mu_1^2}{2(\mu_2-\mu_1)}\]
 Now, if we choose $\lot$ to be proportional to $\pi_1^{-1}$ and choose $\lto$ to be proportional to $\pi_2^{-1}$ (possibly with different constants), we will avoid the degeneracy problem.
-}
 \ssn{e}
 Using these values, we have that $x^*=1$, so plugging into the expression for the error rate from (b) gives $0.5\Phi(-1)+0.5-0.5\Phi(1)=0.1587$
+}
+\subsection*{4}
+The expected loss of some decision function $\h{H}$ is $E_{X, Y}(L(\h{H}(x), Y)$. Writing out the integral gives
+\[\int_{\rn^n}\sum_{k=1}^KL(\h{H}(x), k)p(x, k) dx=\int_{\rn^n}p(x)\sum_{k=1}^KL(\h{H}(x), k)P(k|x)dx\]
+
+%If we define $R_i$ as the subset of $\rn^n$ for which $\h{H}(x)=i$, we can separate the integral as follows
+%\[\sum_{i=1}^K\int_{R_i}p(x)\sum_{k=1}^KL(i, k)P(k|x)dx\]
+%If there is some subset $A$ of $R_i$ for which there exists a $j$ such that  for all $x\in A$, then moving $A$ from $R_i$ to $R_j$ will reduce the value of the expected loss by comparison 
+
+Define $R_i$ as $\{x\in\rn^n|\h{H}(x)=i\}$. Then, suppose that there exists some subset of nonzero measure $A$ of $R_i$ such that $\sum_{k=1}^KL(i, k)P(k|x)\ge\sum_{k=1}^KL(j, k)P(k|x)$. Decompose the above integral as
+\[\int_{\rn^n-A}p(x)\sum_{k=1}^KL(\h{H}(x), k)P(k|x)dx+\int_Ap(x)\sum_{k=1}^KL(i, k)P(k|x)dx\]
+Then, changing the class of $A$ from $i$ to $j$ will result in a strict decrease in the expected loss, which means that the optimal decision rule must satisfy, for each $i$, $\sum_{k=1}^KL(i, k)P(k|x)\ge\sum_{k=1}^KL(j, k)P(k|x)$ for all $j\neq i$ and almost all $x\in R_i$. The rule given satisfies this condition, and since there are a finite number of classes, changing the rule on a set of measure zero from the region associated with each class will not result in a change in the expected loss. Thus, the rule given is optimal.
+\subsection*{5}
+\ssn{a}
+We have $\cov(X_2,X_2)=v_2$, so writing $X_2=\alpha X_1+Z$ gives
+\[\cov(\alpha X_1+Z, \alpha X_1+Z)=\cov(\alpha X_1, \alpha X_1)+0+\cov(Z, Z)=\alpha^2v_1+\var(Z)=v_2\]
+In addition, using $\cov(X_1, X_2)=a$ gives us
+\[a=\cov(X_1, \alpha X_1+Z)=\alpha v_1+0\implies \alpha=\frac{a}{v_1}\]
+Substituting into the first equation gives us $\var(Z)=v_2-\frac{a^2}{v_1}$
+
+Finally, since $E(X_1)=E(X_2)=0$, we must also have $E(Z)=0$.
+\ssn{b}
+We know that $Z$ is Gaussian because we can express $Z$ as the sum of two Gaussians, $X_2-\alpha X_1$. Thus, it is independent from $X_1$ because their covariance is zero. The variance was derived above.
+\ssn{c}
+We have $E(X_2|X_1=x)=E(\alpha x+Z)=\alpha x$ and $\var(X_2|X_1=x)=\var(\alpha x+Z)=\var(Z)$. 
+\ssn{d}
+Since the samples are all independent, the cross terms in the formula for the variance of a sum disappear and we get
+\[\var(\h{a})=\frac{1}{n^2}\sum_{i=1}^n\var(X_{i1}X_{i2})=\frac{1}{n}\var(X_1X_2)\]
+Then, we have $\var(X_1X_2)=E((X_1X_2)^2)-E(X_1X_2)^2=E((X_1X_2)^2)-a^2$, since the means are zero.
+
+To obtain the first term, note that it is a cross moment and can be obtained by applying $\frac{\partial^4}{\partial x_1^2\partial x_2^2}$ to the mgf of the distribution and evaluating at zero. The mgf itself is
+\[\exp\left(\frac{1}{2}\openm x_1&x_2\closem\openm v_1&a\\a&v_2\closem\openm x_1\\x_2\closem\right)=\exp\left(\frac{1}{2}(x_1^2v_1+2x_1x_2a+x_2^2v_2)\right)\]
+
+Differentiating this wrt $x_1$ twice and wrt $x_2$ once gives 
+\[ax_1v_1T+x_1v_1(x_1v_1+x_2a)(x_2v_2+x_1a)T+v_1(x_2v_2+x_1a)T\]
+where $T$ is the exponential term from above. Then, taking the derivatives and then evaluating gives $v_1v_2$, so the variance of $\h{a}$ is $\frac{1}{n}(v_1v_2-a^2)$.
+\subsection*{6}
 \end{document}
