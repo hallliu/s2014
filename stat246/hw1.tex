@@ -130,4 +130,8 @@ Differentiating this wrt $x_1$ twice and wrt $x_2$ once gives
 \[ax_1v_1T+x_1v_1(x_1v_1+x_2a)(x_2v_2+x_1a)T+v_1(x_2v_2+x_1a)T\]
 where $T$ is the exponential term from above. Then, taking the derivatives and then evaluating gives $v_1v_2$, so the variance of $\h{a}$ is $\frac{1}{n}(v_1v_2-a^2)$.
 \subsection*{6}
+\ssn{a}
+$\Sigma$ is positive definite because $A$ is nonsingular -- computing $x^T\Sigma x=x^TA^TAx=\|Ax\|_2^2$ will result in a positive value as long as $x$ is nonzero. The eigenvalues of $\Sigma$ are the squared eigenvalues of $A$, so the lowest eigenvalue of $\Sigma$ is $0.01$.
+\ssn{b}
+Sampling from a multivariate normal distribution with some specified covariance matrix can be done by first obtaining an iid sample of $n$ standard normal random variables, then transforming it via left-multiplication by $A^T$. Python code is attached.
 \end{document}
