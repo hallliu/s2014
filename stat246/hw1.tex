@@ -45,7 +45,14 @@ Now, to check that this is a maximum, taking the second derivative gives us a co
 Plugging in the previously obtained value for the stationary point, we have
 \[d^2-3d+2-(d-1)(2d-1)+(d-1)^2=-2d+2\]
 which becomes negative for large $d$. Thus, the point is a maximum, and we can estimate it by $\sigma\sqrt{d}$ for large $d$.
-%TODO: defn of p?
+
+Plugging $r^*+\ep$ to $f$, we get 
+\[\frac{S_d(r^*+\ep)^{d-1}}{(2\pi\sigma^2)^{d/2}}\exp\left(-\frac{{r^*}^2+2r^*\ep+\ep^2}{2\sigma^2}\right)\]
+Ignoring the first-order term in $\ep$ inside the exponential, we're left with
+\[\frac{S_d(r^*+\ep)^{d-1}}{(2\pi\sigma^2)^{d/2}}\exp\left(-\frac{{r^*}^2}{2\sigma^2}\right)\exp\left(-\frac{\ep^2}{2\sigma^2}\right)\]
+As $\ep$ grows larger, the decay from the exponential term will dominate the at-most-order-$d-1$ contribution from $(r^*+\ep)^{d-1}$, so we can approximate this as 
+\[f(r^*)\exp\left(-\frac{\ep^2}{2\sigma^2}\right)\]
+Thus, the value of $f$ decays as the exponential of the square of the distance from the maximum point, which means that the mass of the density in shells away from that optimal radius is in fact very low.
 \subsection{2}
 By the AM-GM inequality, we have $\frac{a+b}{2}\leq\sqrt{ab}$. Since the minimum of $a$ and $b$ is bounded above by the arithmetic mean, we thus also have $\min(a,b)\leq\sqrt{ab}$. 
 
