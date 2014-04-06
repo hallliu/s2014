@@ -123,12 +123,17 @@ Since the samples are all independent, the cross terms in the formula for the va
 \[\var(\h{a})=\frac{1}{n^2}\sum_{i=1}^n\var(X_{i1}X_{i2})=\frac{1}{n}\var(X_1X_2)\]
 Then, we have $\var(X_1X_2)=E((X_1X_2)^2)-E(X_1X_2)^2=E((X_1X_2)^2)-a^2$, since the means are zero.
 
-To obtain the first term, note that it is a cross moment and can be obtained by applying $\frac{\partial^4}{\partial x_1^2\partial x_2^2}$ to the mgf of the distribution and evaluating at zero. The mgf itself is
-\[\exp\left(\frac{1}{2}\openm x_1&x_2\closem\openm v_1&a\\a&v_2\closem\openm x_1\\x_2\closem\right)=\exp\left(\frac{1}{2}(x_1^2v_1+2x_1x_2a+x_2^2v_2)\right)\]
-
-Differentiating this wrt $x_1$ twice and wrt $x_2$ once gives 
-\[ax_1v_1T+x_1v_1(x_1v_1+x_2a)(x_2v_2+x_1a)T+v_1(x_2v_2+x_1a)T\]
-where $T$ is the exponential term from above. Then, taking the derivatives and then evaluating gives $v_1v_2$, so the variance of $\h{a}$ is $\frac{1}{n}(v_1v_2-a^2)$.
+%To obtain the first term, note that it is a cross moment and can be obtained by applying $\frac{\partial^4}{\partial x_1^2\partial x_2^2}$ to the mgf of the distribution and evaluating at zero. The mgf itself is
+%\[\exp\left(\frac{1}{2}\openm x_1&x_2\closem\openm v_1&a\\a&v_2\closem\openm x_1\\x_2\closem\right)=\exp\left(\frac{1}{2}(x_1^2v_1+2x_1x_2a+x_2^2v_2)\right)\]
+%
+%Differentiating this wrt $x_1$ twice and wrt $x_2$ once gives 
+%\[ax_1v_1T+x_1v_1(x_1v_1+x_2a)(x_2v_2+x_1a)T+v_1(x_2v_2+x_1a)T\]
+%where $T$ is the exponential term from above. Then, taking the derivatives and then evaluating gives $v_1v_2$, so the variance of $\h{a}$ is $\frac{1}{n}(v_1v_2-a^2)$.
+Write $X_1^2X_2^2=X_1^2(\alpha X_1+Z)^2$. Then, the expectation of this is
+\[\alpha^2E(X_1^4)+2\alpha E(Z)E(X_1^3)+E(X_1^2)E(Z^2)=\alpha^2E(X_1^4)+E(X_1^2)E(Z^2)\]
+By differentiating the mgf for $X_1$ four times and evaluating at zero, we obtain $E(X_1^4)=3v_1$. We have that $E(X_1^2)=v_1$ and $E(Z^2)=\var(Z)$, so the resulting expression for $E(X_1^2X_2^2)$ is
+\[3\frac{a^2}{v_1^2}v_1^2+v_1\left(v_2-\frac{a^2}{v_1}\right)=v_1v_2+2a^2\]
+which gives us $\var(\h{a})=\frac{1}{n}(v_1v_2+a^2)$
 \subsection*{6}
 \ssn{a}
 $\Sigma$ is positive definite because $A$ is nonsingular -- computing $x^T\Sigma x=x^TA^TAx=\|Ax\|_2^2$ will result in a positive value as long as $x$ is nonzero. The eigenvalues of $\Sigma$ are the squared eigenvalues of $A$, so the lowest eigenvalue of $\Sigma$ is $0.01$.
