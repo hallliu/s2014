@@ -1,6 +1,8 @@
 import numpy as np
 cimport numpy as np
+cimport cython
 
+@cython.boundscheck(False)
 def compute_stderrs(np.ndarray[double, ndim=2] cov, int n):
     cdef int i, j
     cdef int d = cov.shape[0]
