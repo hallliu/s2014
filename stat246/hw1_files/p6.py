@@ -50,10 +50,13 @@ def generate_results():
         width10 = 0.6*(bins10[1] - bins10[0])
         centers10 = (bins10[:-1] + bins10[1:]) / 2
         plt.bar(centers10, hist10, align='center', width=width10)
+        plt.savefig('e10-{0}.png'.format(ssize), bbox_inches='tight')
 
         plt.figure()
         hist100, bins100 = np.histogram(e100f, bins=50)
         width100 = 0.6*(bins100[1] - bins100[0])
         centers100 = (bins100[:-1] + bins100[1:]) / 2
         plt.bar(centers100, hist100, align='center', width=width100)
-        import ipdb;ipdb.set_trace()
+        plt.savefig('e100-{0}.png'.format(ssize), bbox_inches='tight')
+
+generate_results()
