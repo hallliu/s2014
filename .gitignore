@@ -40,4 +40,5 @@ __pycache__
 *.pyc
 *.mexa64
 *~
+*.so
 cs250/
