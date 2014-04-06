@@ -1,6 +1,9 @@
 #!/usr/bin/python2
 import numpy as np
 import scipy.stats as st
+import pyximport
+pyximport.install()
+from helper_fns import *
 
 '''
 Computes the e and m arrays as desired. e is returned
@@ -24,6 +27,8 @@ def compute_results(d, A):
         cov_est = np.dot(samples, samples.T) / n_samples
 
         # Compute the standardized errors
-        stderr_array = e_data[t, :, :]
+        stderrs = compute_stderrs(np.dot(A.T, A), n)
+        e_data[t, :, :] = (cov - cov_est) / stderrs
+        m_data[t] = np.min(np.linalg.eigvalsh(cov_est))
 
-
+    return (e_data, m_data)
