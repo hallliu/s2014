@@ -13,7 +13,9 @@
 \newcommand{\openm}{\begin{pmatrix}}
 \newcommand{\closem}{\end{pmatrix}}
 \DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
 \DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\im}{im}
 \DeclareMathOperator{\Span}{span}
 \DeclareMathOperator{\Null}{null}
@@ -35,7 +37,42 @@ Date: \today
 \vspace{1.5cm}
 
 \subsection*{1}
+\ssn{a}
+First, note that since $F$ is strictly increasing, we must have that $F(x)\in(0,1)$ for any $x\in\rn$ and $F^{-1}$ exists. Then, for any $y\in(0,1)$, we have $P(Y<y)=P(F(X)<y)=P(X<F^{-1}(y))=F(F^{-1}(y))=y$, which implies that $Y$ has a cdf of $0$ on $(-\infty, 0)$, $y$ on $[0,1]$, and $1$ on $(1, \infty)$. Thus, we have $Y\sim\text{Unif}(0, 1)$.
 
+Going the other way, we have $P(X<x)=P(F^{-1}(U)<x)=P(U<F(x))=F(x)$.
+
+\ssn{b}
+The joint density $f_{X,Y}(x,y)$ of $X$ and $Y$ is the product of their densities (which is 1) since they are independent. Thus, for the difference, for $z\in(0,1]$, we have
+\[P(Z<z)=P(X-Y<z)=P(X<z+Y)=\int_0^{1-z}\int_0^{z+y}1dxdy+\int_{1-z}^1\int_0^11dxdy=\int_0^{1-z}(z+y)dy+z=-\frac{z^2}{2}+z+\frac{1}{2}\]
+For $z\in[-1,0]$, we have
+\[P(Z<z)=P(X-Y<z)=P(X<z+Y)=\int_{-z}^1\int_0^{y+z}1dxdy=\int_{-z}^1(z+y)dy=\frac{z^2}{2}+z+\frac{1}{2}\]
+Differentiating produces the density $z+1$ on $[-1,0]$ and $-z+1$ on $(0,1]$. 
+
+For the minimum, we want $X<z$ or $Y<z$, which is equivalent to the negation of ($X\geq z$ and $Y\geq z$), so the integral for the cdf of $Z$ is 
+\[1-\int_{1-z}^1\int_{1-z}^11dxdy=1-(1-z)^2\]
+and differentiating this produces the density $2(1-z)$.
+\ssn{c}
+The density of $X$ is $f_X(x)=\frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}}$. Taking the expectation of $e^X$ wrt this density gives
+\[\frac{1}{\sqrt{2\pi}}\int_{-\infty}^\infty\exp\left(-\frac{x^2}{2}+x\right)dx=\frac{1}{\sqrt{2\pi}}e^{1/2}\int_{-\infty}^\infty\exp\left(-\frac{(x-1)^2}{2}\right)=e^{1/2}\]
+The variance can be calculated by $E(Y^2)-(E(Y))^2$, and evaluating $E(Y^2)=E(e^{2X})$ gives
+\[\frac{1}{\sqrt{2\pi}}\int_{-\infty}^\infty\exp\left(-\frac{x^2}{2}+2x\right)dx=\frac{1}{\sqrt{2\pi}}e^2\int_{-\infty}^\infty\exp\left(-\frac{(x-2)^2}{2}\right)=e^2\]
+so the variance is $e^2-e$
+\ssn{d}
+$\var_Y(Y|X)=E_Y(Y^2|X)-(E_Y(Y|X))^2$, so the first term is $E_X(\var_Y(Y|X))=E_X(E_Y(Y^2|X))-E_X((E_Y(Y|X))^2)=E_Y(Y^2)-E_X((E_Y(Y|X))^2)$. Similarly, the second term is $E_X((E_Y(Y|X))^2)-(E_X(E_Y(Y|X)))^2=E_X((E_Y(Y|X))^2)-(E_Y(Y))^2$. Adding them together cancels out the $E_X((E_Y(Y|X))^2)$ term, which results in $E_Y(Y^2)-(E_Y(Y))^2=\var(Y)$.
+\subsection*{2}
+\ssn{a}
+Since $X^TX$ is nonsingular and $n>d$, this means that $X$ has rank $d$. The least-squares estimate $\h{\beta}$ satisfies $\h{\beta}=\text{argmin}_\beta\|X\beta-y\|_2^2$. The solution is given by $X^+y$, where $X^+$ is the Moore-Penrose pseudoinverse of $X$. Due to $X$ having full column rank, we can write $X^+=(X^TX)^{-1}X^T$, which means that $\h{\beta}=(X^TX)^{-1}X^Ty$, so the least-squares estimates are $X\h{\beta}=X(X^TX)^{-1}X^Ty=Hy$.
+\ssn{b}
+$HX=X(X^TX)^{-1}X^TX=X$
+\ssn{c}
+$H^T=(X(X^TX)^{-1}X^T)^T=X(X^TX)^{-T}X^T=X(X^TX)^{-1}X^T$
+\ssn{d}
+$HH=X(X^TX)^{-1}X^TX(X^TX)^{-1}X^T=X(X^TX)^{-1}X^T=H$
+\ssn{e}
+By (d), $H$ is a projection matrix. Thus, we just need to show that the image of $H$ is the column space. Since the image of $X$ is the column space (a subset of $\rn^n$), this means that we need to show that $(X^TX)^{-1}X^T$ has rank $d$ (or that its image is all of $\rn^d$). This is true because $(X^TX)^{-1}$ is invertible and $X^T$ has rank $d$ also. 
+\ssn{f}
+Traces of products are invariant under cyclic permutation, so $\tr(H)=\tr(X(X^TX)^{-1}X^T)=\tr(X^TX(X^TX)^{-1})=\tr(I_d)=d$.
 \subsection*{3}
 \ssn{b}
 I have a general policy against running unknown scripts on my computer, and since I know that I have a large part of the Python toolchain set up already, I decided to read the setup script (\verb|toolkit.sh|) and replicate the necessary parts. 
