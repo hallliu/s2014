@@ -41,10 +41,15 @@ def generate_results():
         e100_data, m100_data = compute_results(100, a100, ssize)
         e10f = e10_data.flatten()
         e100f = e100_data.flatten()
+        m10p = np.log(100/(1/m10_data))
+        m100p = np.log(100/(1/m100_data))
 
-        print('10 mean: {0}. 100 mean: {1}'.format(e10f.mean(), e100f.mean()))
-        print('10 std: {0}. 100 std: {1}'.format(e10f.std(), e100f.std()))
+        print('e10 mean: {0}. e100 mean: {1}'.format(e10f.mean(), e100f.mean()))
+        print('e10 std: {0}. e100 std: {1}'.format(e10f.std(), e100f.std()))
 
+        print('m10 mean: {0}. m100 mean: {1}'.format(m10p.mean(), m100p.mean()))
+        print('m10 std: {0}. m100 std: {1}'.format(m10p.std(), m100p.std()))
+        '''
         plt.figure()
         hist10, bins10 = np.histogram(e10f, bins=50)
         width10 = 0.6*(bins10[1] - bins10[0])
@@ -58,5 +63,18 @@ def generate_results():
         centers100 = (bins100[:-1] + bins100[1:]) / 2
         plt.bar(centers100, hist100, align='center', width=width100)
         plt.savefig('e100-{0}.png'.format(ssize), bbox_inches='tight')
+        '''
 
-generate_results()
+        plt.figure()
+        hist10, bins10 = np.histogram(m10p, bins=50)
+        width10 = 0.6*(bins10[1] - bins10[0])
+        centers10 = (bins10[:-1] + bins10[1:]) / 2
+        plt.bar(centers10, hist10, align='center', width=width10)
+        plt.savefig('m10-{0}.png'.format(ssize), bbox_inches='tight')
+
+        plt.figure()
+        hist100, bins100 = np.histogram(m100p, bins=50)
+        width100 = 0.6*(bins100[1] - bins100[0])
+        centers100 = (bins100[:-1] + bins100[1:]) / 2
+        plt.bar(centers100, hist100, align='center', width=width100)
+        plt.savefig('m100-{0}.png'.format(ssize), bbox_inches='tight')
