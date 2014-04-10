@@ -68,7 +68,7 @@ where $\gamma=V^T\beta$, by the unitary invariance of the $2$-norm. Let $z=U^Ty$
 \[\sum_{i=1}^d(\sigma_i\gamma_i-z_i)^2+\sum_{i=d+1}^nz_i^2\]
 To minimize this, we set $\gamma_i=z_i/\sigma_i$ for $i\in[1..d]$, and we can choose the others arbitrarily. Might as well make the others zero, so then we have that $\h{\beta}=V\h{\gamma}=V\Sigma^+U^Ty$, where $\Sigma^+$ is diagonal with entries $\frac{1}{\sigma_i}$ where $\sigma_i\neq0$ and zero elsewhere.
 
-Now, note that both $V\Sigma^+U^Ty$ and $(X^TX)^{-1}X^T$ satisfy the requirements for being the Moore-Penrose pseudoinverse of $X$, so they must be equal. Thus, we have $\h{\beta}=(X^TX)^{-1}X^Ty$.
+Now, note that both $V\Sigma^+U^TX$ and $(X^TX)^{-1}X^T$ satisfy the requirements for being the Moore-Penrose pseudoinverse of $X$. The calculations are a bit tedious to type out and not very illuminating, so I'll omit them. Thus, by the uniqueness of the pseudoinverse, they must be equal. Thus, we have $\h{\beta}=(X^TX)^{-1}X^Ty$.
 \ssn{b}
 $HX=X(X^TX)^{-1}X^TX=X$
 \ssn{c}
