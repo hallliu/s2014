@@ -92,7 +92,19 @@ Solving for $x$, we obtain
 \[x^*=\frac{2\sigma\log\frac{\lot\pi_1}{\lto\pi_2}+\mu_2^2-\mu_1^2}{2(\mu_2-\mu_1)}\]
 Now, if we choose $\lot$ to be proportional to $\pi_1^{-1}$ and choose $\lto$ to be proportional to $\pi_2^{-1}$ (possibly with different constants), we will avoid the degeneracy problem.
 \ssn{e}
-Using these values, we have that $x^*=1$, so plugging into the expression for the error rate from (b) gives $0.5\Phi(-1)+0.5-0.5\Phi(1)=0.1587$
+Using these values, we have that $x^*=1$, so plugging into the expression for the error rate from (b) gives $0.5\Phi(-1)+0.5-0.5\Phi(1)=0.1587$.
+
+If we estimate the two means as $\conj{x_1}$ and $\conj{x_2}$, using the expression from (a), the decision boundary would be 
+{
+    \nc{\cxi}{\conj{x_1}}
+    \nc{\cxii}{\conj{x_2}}
+    $\frac{\cxii^2-\cxi^2}{2(\cxii-\cxi)}$
+}
+
+Code for the computation of error rates from the samples is attached, using the expression from (b). A histogram follows.
+
+\includegraphics[width=0.6\textwidth]{hw1_files/p3.png}
+
 }
 \subsection*{4}
 The expected loss of some decision function $\h{H}$ is $E_{X, Y}(L(\h{H}(x), Y)$. Writing out the integral gives
