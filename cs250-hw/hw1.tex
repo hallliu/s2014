@@ -62,7 +62,13 @@ so the variance is $e^2-e$
 $\var_Y(Y|X)=E_Y(Y^2|X)-(E_Y(Y|X))^2$, so the first term is $E_X(\var_Y(Y|X))=E_X(E_Y(Y^2|X))-E_X((E_Y(Y|X))^2)=E_Y(Y^2)-E_X((E_Y(Y|X))^2)$. Similarly, the second term is $E_X((E_Y(Y|X))^2)-(E_X(E_Y(Y|X)))^2=E_X((E_Y(Y|X))^2)-(E_Y(Y))^2$. Adding them together cancels out the $E_X((E_Y(Y|X))^2)$ term, which results in $E_Y(Y^2)-(E_Y(Y))^2=\var(Y)$.
 \subsection*{2}
 \ssn{a}
-Since $X^TX$ is nonsingular and $n>d$, this means that $X$ has rank $d$. The least-squares estimate $\h{\beta}$ satisfies $\h{\beta}=\text{argmin}_\beta\|X\beta-y\|_2^2$. The solution is given by $X^+y$, where $X^+$ is the Moore-Penrose pseudoinverse of $X$. Due to $X$ having full column rank, we can write $X^+=(X^TX)^{-1}X^T$, which means that $\h{\beta}=(X^TX)^{-1}X^Ty$, so the least-squares estimates are $X\h{\beta}=X(X^TX)^{-1}X^Ty=Hy$.
+Since $X^TX$ is nonsingular and $n>d$, this means that $X$ has rank $d$. The least-squares estimate $\h{\beta}$ satisfies $\h{\beta}=\text{argmin}_\beta\|X\beta-y\|_2^2$. Decompose $X$ via the SVD $X=U\Sigma V^T$. Then, we have 
+\[\|X\beta-y\|_2^2=\norm{U\Sigma V^T\beta-y}_2^2=\norm{\Sigma \gamma-U^Ty}_2^2\]
+where $\gamma=V^T\beta$, by the unitary invariance of the $2$-norm. Let $z=U^Ty$. We know that precisely the first $d$ entries in $\Sigma $ are nonzero because $X$ is rank $d$, so the norm expression is 
+\[\sum_{i=1}^d(\sigma_i\gamma_i-z_i)^2+\sum_{i=d+1}^nz_i^2\]
+To minimize this, we set $\gamma_i=z_i/\sigma_i$ for $i\in[1..d]$, and we can choose the others arbitrarily. Might as well make the others zero, so then we have that $\h{\beta}=V\h{\gamma}=V\Sigma^+U^Ty$, where $\Sigma^+$ is diagonal with entries $\frac{1}{\sigma_i}$ where $\sigma_i\neq0$ and zero elsewhere.
+
+Now, note that both $V\Sigma^+U^Ty$ and $(X^TX)^{-1}X^T$ satisfy the requirements for being the Moore-Penrose pseudoinverse of $X$, so they must be equal. Thus, we have $\h{\beta}=(X^TX)^{-1}X^Ty$.
 \ssn{b}
 $HX=X(X^TX)^{-1}X^TX=X$
 \ssn{c}
