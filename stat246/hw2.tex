@@ -15,6 +15,7 @@
 \DeclareMathOperator{\var}{var}
 \DeclareMathOperator{\rank}{rank}
 \DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\Span}{span}
 \DeclareMathOperator{\Null}{null}
 \newcommand{\nc}{\newcommand}
@@ -32,7 +33,7 @@ Name: Hall Liu
 Date: \today 
 \vspace{1.5cm}
 \subsection*{1}
-The mgf of $Y$ is $M_Y(t)=E(e^{t^TY})=E(e^{t^TAx})=E(e^{(A^Tt)^Tx})=M_X(A^Tt)$, which we can write as $\exp\left(t^TA\mu+\frac{1}{2}t^TA\Sigma A^Tt\right)$. This is the mgf of a normal RV with mean $A\mu$ and covariance $A\Sigma A^T$, so $Y$ must be also distributed as such.
+The mgf of $Y$ is $M_Y(t)=E(e^{t^TY})=E(e^{t^TAX})=E(e^{(A^Tt)^TX})=M_X(A^Tt)$, which we can write as $\exp\left(t^TA\mu+\frac{1}{2}t^TA\Sigma A^Tt\right)$. This is the mgf of a normal RV with mean $A\mu$ and covariance $A\Sigma A^T$, so $Y$ must be also distributed as such.
 
 \subsection*{2}
 \ssn{a}
@@ -50,4 +51,16 @@ Now, we note that
 Thus, if we let $t=\openm t_1\\t_2\closem$, $\mu'=\openm\mu\\A\mu+b\closem$, and $\Sigma'=\openm \Sigma &\Sigma A^T\\A\Sigma &A\Sigma A^T+Q\closem$, we have that the joint mgf of $X,Z$ is $\exp\left(t^T\mu'+\frac{1}{2}t^T\Sigma't\right)$, which means that it's multivariate normal with mean $\mu'$ and covariance $\Sigma'$.
 \ssn{c}
 The marginal is simply restricting the joint distribution to the relevant components. In the case of $Y$, its marginal distribution is then $N(A\mu+b, A\Sigma A^T+Q)$. For the density of $X$ conditional on $Y=y$, (2.81) and (2.82) in the book give us that it's normal with $\mu_{x|y}=\mu+\Sigma A^T(A\Sigma A^T+Q)^{-1}(y-A\mu+b)$ and $\Sigma_{x|y}=\Sigma-\Sigma A^T(A\Sigma A^T+Q)^{-1}A\Sigma$
+\subsection*{3}
+The likelihood of the data is 
+\[\prod_{i=1}^N\frac{C}{|\Sigma|}\exp\left((X_i-\mu_{k_i})^T\Sigma^{-1}(X_i-\mu_{k_i})\right)\pi_{k_i}\]
+where $C$ is a constant that depends on none of the parameters. We have immediately that $\h{\pi}_{k_i}$ is $\frac{\#i}{N}$, where $\#i$ is the number of occurrances of class $i$ in the data. Taking the loglikelihood (and ignoring the constant $C$), we have
+\[\sum_{i=1}^N-\log|\Sigma|+(X_i-\mu_{k_i})^T\Sigma^{-1}(X_i-\mu_{k_i})+\log(\pi_{k_i})\]
+To minimize this expression over the $\mu_k$, write the expression with an inner sum over points with the same class:
+\[-N\log|\Sigma|+\sum_{k=1}^K\sum_{X:Y(X)=k}(X-\mu_k)^T\Sigma^{-1}(X-\mu_k)\]
+The $\pi_{k_i}$ terms have been discarded because they are not dependent on the parameters. Now, we can simply minimize over each class, and find that $\mu_k$ is the sample mean over all points that are in class $k$. 
+
+Now, let $S_k$ be the sample covariance over class $k$, or $\sum_{i=1}^{\#k}(X_i-\conj{X})(X_i-\conj{X})^T$. Then, we can write the log-likelihood (divided out by $N$) as
+\[-\log|\Sigma|+\frac{1}{N}\sum_{i=1}^N\tr\left((X_i-\mu_{k_i})(X_i-\mu_{k_i})^T\Sigma^{-1}\right)=-\log|\Sigma|+\frac{1}{N}\sum_{k=1}^K\tr\left(\#kS_k\Sigma^{-1}\right)=-\log|\Sigma|+\tr\left(\left(\sum_{k=1}^K\frac{\#k}{N}S_k\right)\Sigma^{-1}\right)\]
+It was shown that minimizing an expression of the form $-\log|\Sigma|+\tr(A\Sigma^{-1})$ over $\Sigma$ is given by $\Sigma=A$, so we have that the MLE for the pooled covariance is $\sum_{k=1}^K\frac{\#k}{N}S_k$
 \end{document}
