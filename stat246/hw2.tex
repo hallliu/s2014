@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\subsection*{1}
+The mgf of $Y$ is $M_Y(t)=E(e^{t^TY})=E(e^{t^TAx})=E(e^{(A^Tt)^Tx})=M_X(A^Tt)$, which we can write as $\exp\left(t^TA\mu+\frac{1}{2}t^TA\Sigma A^Tt\right)$. This is the mgf of a normal RV with mean $A\mu$ and covariance $A\Sigma A^T$, so $Y$ must be also distributed as such.
+
+\subsection*{2}
+\ssn{a}
+We have that $f(x,y)=f_Y(y|x)f_X(x)$, so $f(x,y)$ is jointly normal iff this product has the form of one. In (b), we show that there exists a particular definition for $Z$ such that $f_Z(z|x)=f_Y(y|x)$ and $X$ and $Z$ are jointly normal. Thus, since $f(x,z)$ and $f(x,y)$ are equivalent, $f(x,y)$ is normal.
+\ssn{b}
+Let $Z=AX+b+U$, $U\sim N(0,Q)$ and independent of $X$. Then, if given a value for $X$, we have $Z=Ax+b+U$, so consequently we have $f(z|x)=N(Ax+b, Q)$, the same as that of $f(y|x)$.
+
+The joint mgf of $X$ and $Z$ can be written as 
+\[E\left(\exp\left(\openm t_1^T&t_2^T\closem\openm X\\Z\closem\right)\right)=E(\exp(t_1^TX+t_2^T(AX+b+U)))=E(\exp((t_1+A^Tt_2)^TX)\exp(t_2^Tb)\exp(t_2^TU))\]
+Resolving the expected value and expressing the result using the mgfs of $X$ and $U$, we have
+\[\exp\left((t_1+A^Tt_2)^T\mu+t_2^Tb+\frac{1}{2}(t_1+A^Tt_2)^T\Sigma (t_1+A^Tt_2)+\frac{1}{2}t_2^TQt_2\right)\]
+Now, we note that 
+\[(t_1+A^Tt_2)^T\mu+t_2^Tb=\openm t_1^T&t_2^T\closem\openm\mu\\A\mu+b\closem\text{ and}\]
+\[(t_1+A^Tt_2)^T\Sigma (t_1+A^Tt_2)+t_2^TQt_2=\openm t_1^T&t_2^T\closem\openm \Sigma &\Sigma A^T\\A\Sigma &A\Sigma A^T+Q\closem\openm t_1\\t_2\closem\]
+Thus, if we let $t=\openm t_1\\t_2\closem$, $\mu'=\openm\mu\\A\mu+b\closem$, and $\Sigma'=\openm \Sigma &\Sigma A^T\\A\Sigma &A\Sigma A^T+Q\closem$, we have that the joint mgf of $X,Z$ is $\exp\left(t^T\mu'+\frac{1}{2}t^T\Sigma't\right)$, which means that it's multivariate normal with mean $\mu'$ and covariance $\Sigma'$.
+\ssn{c}
+The marginal is simply restricting the joint distribution to the relevant components. In the case of $Y$, its marginal distribution is then $N(A\mu+b, A\Sigma A^T+Q)$. For the density of $X$ conditional on $Y=y$, (2.81) and (2.82) in the book give us that it's normal with $\mu_{x|y}=\mu+\Sigma A^T(A\Sigma A^T+Q)^{-1}(y-A\mu+b)$ and $\Sigma_{x|y}=\Sigma-\Sigma A^T(A\Sigma A^T+Q)^{-1}A\Sigma$
+\end{document}
