@@ -18,6 +18,7 @@
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\Span}{span}
 \DeclareMathOperator{\Null}{null}
+\DeclareMathOperator{\flatv}{flat}
 \newcommand{\nc}{\newcommand}
 \newcommand{\rn}{\mathbb{R}}
 \nc{\cn}{\mathbb{C}}
@@ -53,8 +54,8 @@ Thus, if we let $t=\openm t_1\\t_2\closem$, $\mu'=\openm\mu\\A\mu+b\closem$, and
 The marginal is simply restricting the joint distribution to the relevant components. In the case of $Y$, its marginal distribution is then $N(A\mu+b, A\Sigma A^T+Q)$. For the density of $X$ conditional on $Y=y$, (2.81) and (2.82) in the book give us that it's normal with $\mu_{x|y}=\mu+\Sigma A^T(A\Sigma A^T+Q)^{-1}(y-A\mu+b)$ and $\Sigma_{x|y}=\Sigma-\Sigma A^T(A\Sigma A^T+Q)^{-1}A\Sigma$
 \subsection*{3}
 The likelihood of the data is 
-\[\prod_{i=1}^N\frac{C}{|\Sigma|}\exp\left((X_i-\mu_{k_i})^T\Sigma^{-1}(X_i-\mu_{k_i})\right)\pi_{k_i}\]
-where $C$ is a constant that depends on none of the parameters. We have immediately that $\h{\pi}_{k_i}$ is $\frac{\#i}{N}$, where $\#i$ is the number of occurrances of class $i$ in the data. Taking the loglikelihood (and ignoring the constant $C$), we have
+\[\prod_{i=1}^N\frac{C}{\sqrt{|\Sigma|}}\exp\left(-\frac{1}{2}(X_i-\mu_{k_i})^T\Sigma^{-1}(X_i-\mu_{k_i})\right)\pi_{k_i}\]
+where $C$ is a constant that depends on none of the parameters. We have immediately that $\h{\pi}_{k_i}$ is $\frac{\#i}{N}$, where $\#i$ is the number of occurrances of class $i$ in the data. Taking the loglikelihood (and ignoring the constant $C$ and the factor of $\frac{1}{2}$), we have
 \[\sum_{i=1}^N-\log|\Sigma|+(X_i-\mu_{k_i})^T\Sigma^{-1}(X_i-\mu_{k_i})+\log(\pi_{k_i})\]
 To minimize this expression over the $\mu_k$, write the expression with an inner sum over points with the same class:
 \[-N\log|\Sigma|+\sum_{k=1}^K\sum_{X:Y(X)=k}(X-\mu_k)^T\Sigma^{-1}(X-\mu_k)\]
@@ -63,4 +64,29 @@ The $\pi_{k_i}$ terms have been discarded because they are not dependent on the 
 Now, let $S_k$ be the sample covariance over class $k$, or $\sum_{i=1}^{\#k}(X_i-\conj{X})(X_i-\conj{X})^T$. Then, we can write the log-likelihood (divided out by $N$) as
 \[-\log|\Sigma|+\frac{1}{N}\sum_{i=1}^N\tr\left((X_i-\mu_{k_i})(X_i-\mu_{k_i})^T\Sigma^{-1}\right)=-\log|\Sigma|+\frac{1}{N}\sum_{k=1}^K\tr\left(\#kS_k\Sigma^{-1}\right)=-\log|\Sigma|+\tr\left(\left(\sum_{k=1}^K\frac{\#k}{N}S_k\right)\Sigma^{-1}\right)\]
 It was shown that minimizing an expression of the form $-\log|\Sigma|+\tr(A\Sigma^{-1})$ over $\Sigma$ is given by $\Sigma=A$, so we have that the MLE for the pooled covariance is $\sum_{k=1}^K\frac{\#k}{N}S_k$
+\subsection*{4}
+Let $g(\eta)=\exp(A(\eta))$. Then, we have $f(x;\eta)=\frac{h(x)}{g(\eta)}e^{\eta^TT(x)}$, and integrating this over $\rn^n$ (the space $x$ lies in) gives $1$, so we have $g(\eta)=\int_{\rn^n}h(x)e^{\eta^TT(x)}dx$.
+
+Taking the first derivative of $g$ gives $\nabla g(\eta)=e^{A(\eta)}\nabla A(\eta)$ and 
+\[\nabla g(\eta)=\int h(x)e^{\eta^TT(x)}T(x)dx\implies\nabla A(\eta)=\int h(x)e^{\eta^TT(x)-A(\eta)}T(x)=E(T(x))\]
+Using the notation $\nabla^2 g$ for the second derivative, we have that $\nabla^2g(\eta)=e^{A(\eta)}\left(\nabla^2A(\eta)+\nabla A(\eta)\nabla A(\eta)^T\right)$ and
+\[\nabla^2 g(\eta)=\int h(x)e^{\eta^TT(x)}T(x)T(x)^Tdx\]
+Combining the two expressions gives us 
+\[e^{A(\eta)}\left(\nabla^2 A(\eta)+E(T(x))E(T(x)^T)\right)=\int h(x)e^{\eta^TT(x)}T(x)T(x)^Tdx\]
+Dividing out by $e^{A(\eta)}$ and note that the RHS is equal to $E(T(x)T(x)^T)$, so subtracting off $E(T(x))E(T(x)^T)$ from both sides gives $\nabla^2A(\eta)=E(T(x)T(x)^T)-E(T(x))E(T(x)^T)$, which is the covariance of $T(x)$.
+\subsection*{5}
+The density of the multivariate normal distribution can be written as 
+\[\frac{1}{(2\pi)^{d/2}|\Sigma|}\exp\left(-\frac{1}{2}\tr\left((x-\mu)(x-\mu)^T\Sigma^{-1}\right)\right)\]
+We can let $(2\pi)^{-d/2}$ be $h(x)$ and put $|\Sigma^{-1}|$ into $g(\mu, \Sigma)$, so we are left with considering the exponential term. Expanding out the exponent, we get
+\[\frac{-1}{2}\tr\left(xx^T-\mu x^T-x\mu^T+\mu\mu^T)\Sigma^{-1}\right)=-\frac{1}{2}\left(\tr(xx^T\Sigma^{-1})-2\tr(x\mu^T\Sigma^{-1})+\tr(\mu\mu^T\Sigma^{-1})\right)\]
+Now, let $g(\mu,\Sigma)=|\Sigma^{-1}|\exp\left(-\frac{1}{2}\mu^T\Sigma^{-1}\mu\right)$, so we can now discard the last term from the above expression and try to find what $T(x)$ is. We're left with
+\[-\frac{1}{2}\tr(xx^T\Sigma^{-1})+\mu^T\Sigma^{-1}x\]
+
+Define $\flatv(A)$ for a $n\times m$ matrix $A$ to be a $nm$-long column vector that consists of the rows of $A$ laid out in sequential order. Then, we have that $\tr(AB)=\flatv(A)^T\flatv(B^T)$ for matrices $A,B$. Let $\eta=\openm\Sigma^{-1}\mu\\-\frac{1}{2}\flatv(\Sigma^{-1})\closem$ and let $T(x)$ be $\openm x\\\flatv(xx^T)\closem$. Then, we have that
+\[\eta^TT(x)=\openm\mu^T\Sigma^{-1}&-\frac{1}{2}\flatv(\Sigma^{-1})^T\closem\openm x\\\flatv(xx^T)\closem=\mu^T\Sigma^{-1}x-\frac{1}{2}\tr(\Sigma^{-1}xx^T)\]
+which corresponds to the terms inside the exponent that were not absorbed by $g(\mu,\Sigma)$. Thus, we have that the dimension of $T(x)$ and $\eta$ is $d+d^2$.
+
+In summary, $h(x)=(2\pi)^{-d/2}$, $g(\mu,\Sigma)=|\Sigma^{-1}|\exp\left(-\frac{1}{2}\mu^T\Sigma^{-1}\mu\right)$, $\eta=\openm\Sigma^{-1}\mu\\-\frac{1}{2}\flatv(\Sigma^{-1})\closem$, and $T(x)=\openm x\\\flatv(xx^T)\closem$.
+\subsection*{6}
+
 \end{document}
