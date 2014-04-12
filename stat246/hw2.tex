@@ -88,5 +88,32 @@ which corresponds to the terms inside the exponent that were not absorbed by $g(
 
 In summary, $h(x)=(2\pi)^{-d/2}$, $g(\mu,\Sigma)=|\Sigma^{-1}|\exp\left(-\frac{1}{2}\mu^T\Sigma^{-1}\mu\right)$, $\eta=\openm\Sigma^{-1}\mu\\-\frac{1}{2}\flatv(\Sigma^{-1})\closem$, and $T(x)=\openm x\\\flatv(xx^T)\closem$.
 \subsection*{6}
+\ssn{a}
+If we write $x^{\alpha-1}=e^{(\alpha-1)\log(x)}$, the density of the gamma distribution becomes
+\[\frac{1}{\Gamma(\alpha)\beta^\alpha}\exp\left(-\frac{x}{\beta}+(\alpha-1)\log(x)\right)=\frac{1}{\Gamma(\alpha)\beta^\alpha}\exp\left(\openm-\beta^{-1}&\alpha-1\closem\openm x\\\log(x)\closem\right)\]
+Thus, we have $\eta=\openm-\beta^{-1}\\\alpha-1\closem$, $T(x)=\openm x\\\log(x)\closem$, $g(\eta)=\frac{1}{\Gamma(\alpha)\beta^\alpha}$, and $h(x)=1$.
+
+By (2.228), the ML estimator for $\eta$ satisfies
+\[-\nabla \log g(\eta)=\frac{1}{N}\sum_{i=1}^NT(x_i)\]
+In terms of the components of $\eta$, we have $g(\eta)=\frac{(-\eta_1)^{\eta_2+1}}{\Gamma(\eta_2+1)}$. The negative log of this is $\log\Gamma(\eta_2+1)-(\eta_2+1)\log(-\eta_1)$, and its gradient is $\openm\psi^{(0)}(\alpha)-\log\beta\\-\frac{\alpha}{\beta}\closem$, where $\psi^{(0)}$ is the polygamma function.
+
+Then, the pair of equations for $\alpha$ and $\beta$ are 
+\begin{align*}
+    \psi^{(0)}(\alpha)-\log\beta&=\conj{x}\text{ and}\\
+    -\frac{\alpha}{\beta}&=\frac{1}{N}\sum_{i=1}^N\log x_i\\
+\end{align*}
+Due to the lack of a closed-form inverse for the polygamma function, there probably exists no closed-form solution to this system.
+\ssn{b}
+The notation got really confusing because $\beta$ is used as a scale parameter here rather than the rate parameter that it usually stands for. I'm just going to flip it around and let $\theta=\beta^{-1}$. If we hold $\alpha$ fixed, we can write the gamma-$\alpha$ distribution with parameter $\theta$ in the exponential family form as
+\[\frac{x^{\alpha-1}}{\Gamma(\alpha)}\theta^\alpha e^{\theta(-x)}\]
+with $g(\theta)=\theta^\alpha$ and $T(x)=-x$. Then, by (2.229), the conjugate prior for $\theta$ has the form
+\[f(\chi, \nu)\theta^{\alpha\nu}e^{\nu\theta\chi}\]
+where $\chi$ is a hyperparameter. If we set $\nu=\frac{a-1}{\alpha}$, this has the functional form of a gamma distribution with parameters $a,b$($b$ is a rate parameter), where $b=-\frac{\chi(a-1)}{\alpha}$. Thus, the conjugate prior of $\theta$ is a gamma distribution, which means that the conjugate prior of $\beta$ is an inverse gamma distribution.
+
+If we work in terms of $\theta$, the likelihood for the data $X_i$ is 
+\[\frac{\theta^{N\alpha}}{\Gamma(\alpha)^N}\prod_{i=1}^NX_i^{\alpha-1}e^{-X_i\theta}\]
+Multiplying this by the conjugate prior produces
+\[\left(\frac{\prod_{i=1}^NX_i^{\alpha-1}}{\Gamma(\alpha)^N}\cdot\frac{b^a}{\Gamma(a)}\right)\theta^{N\alpha+a-1}e^{-\theta\sum_{i=1}^NX_i-b\theta}\]
+Up to some normalizing constant that absorbs all the stuff in the front in the parens, this is another gamma distribution with shape $a+N\alpha$ and rate $b+\sum X_i$, so the posterior mean of $\theta$ is $\frac{a+N\alpha}{b+\sum X_i}$, which means that the posterior mean of $\beta$ is the reciprocal of this.
 
 \end{document}
