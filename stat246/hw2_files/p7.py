@@ -49,7 +49,7 @@ def get_pooled_estimate(sample1, sample2):
 '''
 Calculates the decision boundary between two distributions specified
 in the arguments. Returns A, b, c where the boundary is
-x^TAx+b^Tx+c=0
+x^TAx+b^Tx+c=0. Also works on pooled covariance -- just make cov1 == cov2
 '''
 def calculate_boundary(mean1, cov1, mean2, cov2):
     # Convert everything into matrices so we can do the multiplications concisely
@@ -78,7 +78,8 @@ def calculate_boundary(mean1, cov1, mean2, cov2):
 
 '''
 Returns a tuple (X,Y,Z) of arguments suitable to passing into the contour plot command
-Takes A, b, c as parameters (of the quadratic)
+Takes A, b, c as parameters (of the quadratic). Don't worry about this function -- it's
+mostly python/numpy magic.
 '''
 def get_contour_params(A, b, c):
     A = A.A
