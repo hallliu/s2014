@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[cm]{fullpage}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\newcommand{\zn}{\mathbb{Z}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\begin{document}
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\subsection*{1}
+\ssn{a}
+Suppose we have a population which is uniformly distributed on the unit circle. Consider some optimal codebook with two clusters. Since the population distribution has rotational symmetry, the population clustering risk is invariant under rotations. Thus, we can obtain a distinct codebook which is also optimal by rotating any optimal codebook. Since we can approach the optimal risk by approaching any of the rotated variants of the optimal codebook, we do not necessarily have to be close to the specified optimal codebook.
+\ssn{b}
+Let $C_k$ be the optimal clustering with $k$ clusters. If we arbitrarily add a center $d$ to this clustering to obtain a clustering $D$, we will have $R(D)\leq R(C_k)$. For any point $x$ in the space we're in, we have $\min_D\|x-d_i\|^2\leq\min_{C_k}\|x-c_i\|^2$, as $C_k$ is a subset of $D$. Thus, when we integrate to find the expected value, the integral with $D$ will be less than or equal by comparison, which means that we can always find a clustering with $k+1$ clusters that either matches or equals the optimal with $k$ clusters.
+
+\end{document}

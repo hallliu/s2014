@@ -114,7 +114,7 @@ If we work in terms of $\theta$, the likelihood for the data $X_i$ is
 \[\frac{\theta^{N\alpha}}{\Gamma(\alpha)^N}\prod_{i=1}^NX_i^{\alpha-1}e^{-X_i\theta}\]
 Multiplying this by the conjugate prior produces
 \[\left(\frac{\prod_{i=1}^NX_i^{\alpha-1}}{\Gamma(\alpha)^N}\cdot\frac{b^a}{\Gamma(a)}\right)\theta^{N\alpha+a-1}e^{-\theta\sum_{i=1}^NX_i-b\theta}\]
-Up to some normalizing constant that absorbs all the stuff in the front in the parens, this is another gamma distribution with shape $a+N\alpha$ and rate $b+\sum X_i$, so the posterior mean of $\theta$ is $\frac{a+N\alpha}{b+\sum X_i}$, which means that the posterior mean of $\beta$ is the reciprocal of this.
+Up to some normalizing constant that absorbs all the stuff in the front in the parens, this is another gamma distribution with shape $a+N\alpha$ and rate $b+\sum X_i$. Thus, $\beta=1/\theta$ has an inverse-gamma distribution with shape $a+N\alpha$ and scale $b+\sum X_i$, which means that the posterior mean of $\beta$ is $\frac{b+\sum X_i}{a+N\alpha-1}$
 
 \subsection*{7}
 Since the number of samples from each distribution is equal, the decision can be made by just seeing which of the likelihoods is greater. Doing so, we obtain the following plot of the decision boundaries, each a locus of solutions to a quadratic $x^TAx+b^Tx+c=0$. The black curve is the boundary obtained from using the true parameters, the red curve the non-pooled covariance, and the blue line is the linear boundary from the pooled covariance (still a quadratic, but $A=0$). 
