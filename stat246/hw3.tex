@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\subsection*{1}
+\ssn{a}
+Let $Y=1,\ldots,M$ with $P(Y=m)=\pi_m$, and let $(X|Y=m)\sim N(\mu_m, \sigma_m^2)$. Then, the joint distribution of $X$ and $Y$ is the product of these,
+\[f_{X,Y}(x,y)=\phi(x;\mu_y,\sigma_y^2)\pi_y\]
+To get the marginal density of $X$ we sum over $Y$, which gives
+\[\sum_{m=1}^M\phi(x;\mu_m,\sigma_m^2)\pi_m\]
+where $\phi$ is the normal pdf, so this gives us the density for the mixture model.
+\ssn{b}
+The likelihood for a sample $(x_i,y_i)$ is 
+\[\prod_{i=1}^N\phi(x_i;\mu_{y_i}, \sigma_{y_i}^2)\pi(y_i)=\frac{1}{(2\pi)^{N/2}}\prod_{i=1}^N\frac{1}{\sigma_{y_i}}\exp\left(\frac{(x_i-\mu_{y_i})^2}{2\sigma_{y_i}^2}\right)\pi(y_i)\]
+whose logarithm is 
+\[-\frac{N}{2}\log(2\pi)\sum_{i=1}^N\left(-\log(\sigma_{y_i})+\log\pi(y_i)+\frac{(x_i-\mu_{y_i})^2}{2\sigma_{y_i}^2}\right)\]
+Now, separate it by the value of the $Y_i$, letting $N_m$ be the number of observations with $Y=m$. Doing this and discarding the constant factor in the front, we get
+\[\sum_{m=1}^MN_m\left(\log\pi_m-\log\sigma_m\right)+\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}\]
+Differentating wrt $\pi_m$ and setting equal to $0$, we obtain $\h{\pi_m}=N_m$, which after normalizing so that their sum is $1$, becomes $\h{\pi_m}=\frac{N_m}{N}$. Then, what we obtain is
+\[\sum_{m=1}^M\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}-\log\sigma_m+\h{\pi_m}\]
+Then, we just have a collection of $M$ unrelated normal log-likelihoods to maximize, so the MLE of the means and the variances are just the sample mean and sample variance within the classes.
+\ssn{c}
+
+\end{document}
