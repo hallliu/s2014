@@ -50,5 +50,24 @@ Differentating wrt $\pi_m$ and setting equal to $0$, we obtain $\h{\pi_m}=N_m$, 
 \[\sum_{m=1}^M\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}-\log\sigma_m+\h{\pi_m}\]
 Then, we just have a collection of $M$ unrelated normal log-likelihoods to maximize, so the MLE of the means and the variances are just the sample mean and sample variance within the classes.
 \ssn{c}
+The likelihood of the data $X_i$ (ignoring the constant multipliers that don't matter for maximization) is
+\[\prod_{i=1}^N\frac{\pi_1}{\sigma_1}\exp\left(-\frac{(X_i-\mu_1)^2}{2\sigma_1^2}\right)+\frac{\pi_2}{\sigma_2}\exp\left(-\frac{(X_i-\mu_2)^2}{2\sigma_2^2}\right)\]
+and taking the log gives
+\[\sum_{i=1}^N\log\left(\frac{\pi_1}{\sigma_1}\exp\left(-\frac{(X_i-\mu_1)^2}{2\sigma_1^2}\right)+\frac{\pi_2}{\sigma_2}\exp\left(-\frac{(X_i-\mu_2)^2}{2\sigma_2^2}\right)\right)\]
+If we plug in the given estimates for the parameters apart from the $\sigma$s, and assume that $\sigma_2$ is fixed, then examine the behaviour of the first term inside the log for each $i$ as $\h{\sigma}_1\to0$. If $i\neq1$, then the expression inside the exponential will decay to $0$ extremely quickly, dominating the $\frac{1}{\sigma_1}$ term outside the exponential. However, for $i=1$, the term inside the exponential is zero, which means that the first term becomes $\frac{\pi_1}{\sigma_1}$, and this will go to infinity as $\sigma_1\to0$. Thus, the whole log-likelihood will also diverge to infinity. This means that if we try to use the EM algorithm on this and one of the estimates of the means ends up falling on one of the data points exactly, it'll start to diverge because the likelihood has no global maximum.
+\ssn{d}
+For the $i\neq1$ terms, setting $\sigma_1=\sigma_2=\sigma$ and letting that go to zero in the log-likelihood produces $N-1$ terms that asymptotically behaves like $\log\left(\frac{1}{\sigma}\exp(-\sigma^{-2})\right)$, and the $i=1$ term still behaves like $\log\sigma^{-1}$. Adding these together results in the exponential terms decaying much faster thatn the $\sigma^{-1}$ terms, which means that the log-likelihood will go to $-\infty$ instead, avoiding the problem.
+\ssn{e}
+Continuing from (b), after estimating the $\pi_m$, we obtain 
+\[\sum_{m=1}^MN_m\left(\log\h{\pi}_m-\log\sigma_m\right)+\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}\]
+for the log-likelihood. Differentiating wrt $\mu_1$ and setting equal to zero, we have that $\h{\mu}_m$ is the sample mean of the $X_i$ with corresponding $Y_i$ equal to $m$, for $m=1,2$.
+
+Finally, note that this is now the same as the $2$-class classification problem whose MLE we computed in problem 3 of the last homework. From there, we can conclude that the MLE of the covariance is the weighted average of the sample covariances, with 
+\ssn{f}
+Begin with initial estimates $\mu_1^{(0)}$, $\mu_2^{(0)}$, $\sigma^{(0)}$, $\pi_1^{(0)}$, and $\pi_2^{(0)}$. Collectively, call these parameters $\eta$. In the $k$th step, let $w_{n, m}=f(Y=m|X_n;\eta^{(k-1)})$ for $m=1,2$. Estimate $\pi_m^{(k)}$ by taking $\frac{1}{N}\sum_{i=1}^Nw_{m, i}$. Then, set
+\begin{align*}
+    \mu_1^{(k)}&=\frac{\frac{1}{N}\sum_{i=1}^Nw_{1,i}X^{(i)}}{\sum_{i=1}^Nw_{1, i}}\\
+    \mu_2^{(k)}&=\frac{\frac{1}{N}\sum_{i=1}^Nw_{2,i}X^{(i)}}{\sum_{i=1}^Nw_{2, i}}\\
+    \sigma^{(k)}&=\pi_1^{(k)}\frac{
 
 \end{document}
