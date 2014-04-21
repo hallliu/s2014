@@ -41,13 +41,13 @@ To get the marginal density of $X$ we sum over $Y$, which gives
 where $\phi$ is the normal pdf, so this gives us the density for the mixture model.
 \ssn{b}
 The likelihood for a sample $(x_i,y_i)$ is 
-\[\prod_{i=1}^N\phi(x_i;\mu_{y_i}, \sigma_{y_i}^2)\pi(y_i)=\frac{1}{(2\pi)^{N/2}}\prod_{i=1}^N\frac{1}{\sigma_{y_i}}\exp\left(\frac{(x_i-\mu_{y_i})^2}{2\sigma_{y_i}^2}\right)\pi(y_i)\]
+\[\prod_{i=1}^N\phi(x_i;\mu_{y_i}, \sigma_{y_i}^2)\pi(y_i)=\frac{1}{(2\pi)^{N/2}}\prod_{i=1}^N\frac{1}{\sigma_{y_i}}\exp\left(-\frac{(x_i-\mu_{y_i})^2}{2\sigma_{y_i}^2}\right)\pi(y_i)\]
 whose logarithm is 
-\[-\frac{N}{2}\log(2\pi)\sum_{i=1}^N\left(-\log(\sigma_{y_i})+\log\pi(y_i)+\frac{(x_i-\mu_{y_i})^2}{2\sigma_{y_i}^2}\right)\]
+\[-\frac{N}{2}\log(2\pi)\sum_{i=1}^N\left(-\log(\sigma_{y_i})+\log\pi(y_i)-\frac{(x_i-\mu_{y_i})^2}{2\sigma_{y_i}^2}\right)\]
 Now, separate it by the value of the $Y_i$, letting $N_m$ be the number of observations with $Y=m$. Doing this and discarding the constant factor in the front, we get
-\[\sum_{m=1}^MN_m\left(\log\pi_m-\log\sigma_m\right)+\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}\]
+\[\sum_{m=1}^MN_m\left(\log\pi_m-\log\sigma_m\right)-\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}\]
 Differentating wrt $\pi_m$ and setting equal to $0$, we obtain $\h{\pi_m}=N_m$, which after normalizing so that their sum is $1$, becomes $\h{\pi_m}=\frac{N_m}{N}$. Then, what we obtain is
-\[\sum_{m=1}^M\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}-\log\sigma_m+\h{\pi_m}\]
+\[\sum_{m=1}^M\sum_{i=1}^{N_m}-\frac{(x_i-\mu_m)^2}{2\sigma_m^2}-\log\sigma_m+\h{\pi_m}\]
 Then, we just have a collection of $M$ unrelated normal log-likelihoods to maximize, so the MLE of the means and the variances are just the sample mean and sample variance within the classes.
 \ssn{c}
 The likelihood of the data $X_i$ (ignoring the constant multipliers that don't matter for maximization) is
@@ -59,15 +59,60 @@ If we plug in the given estimates for the parameters apart from the $\sigma$s, a
 For the $i\neq1$ terms, setting $\sigma_1=\sigma_2=\sigma$ and letting that go to zero in the log-likelihood produces $N-1$ terms that asymptotically behaves like $\log\left(\frac{1}{\sigma}\exp(-\sigma^{-2})\right)$, and the $i=1$ term still behaves like $\log\sigma^{-1}$. Adding these together results in the exponential terms decaying much faster thatn the $\sigma^{-1}$ terms, which means that the log-likelihood will go to $-\infty$ instead, avoiding the problem.
 \ssn{e}
 Continuing from (b), after estimating the $\pi_m$, we obtain 
-\[\sum_{m=1}^MN_m\left(\log\h{\pi}_m-\log\sigma_m\right)+\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}\]
+\[\sum_{m=1}^2N_m\left(\log\h{\pi}_m-\log\sigma_m\right)-\sum_{i=1}^{N_m}\frac{(x_i-\mu_m)^2}{2\sigma_m^2}\]
 for the log-likelihood. Differentiating wrt $\mu_1$ and setting equal to zero, we have that $\h{\mu}_m$ is the sample mean of the $X_i$ with corresponding $Y_i$ equal to $m$, for $m=1,2$.
 
 Finally, note that this is now the same as the $2$-class classification problem whose MLE we computed in problem 3 of the last homework. From there, we can conclude that the MLE of the covariance is the weighted average of the sample covariances, with 
 \ssn{f}
-Begin with initial estimates $\mu_1^{(0)}$, $\mu_2^{(0)}$, $\sigma^{(0)}$, $\pi_1^{(0)}$, and $\pi_2^{(0)}$. Collectively, call these parameters $\eta$. In the $k$th step, let $w_{n, m}=f(Y=m|X_n;\eta^{(k-1)})$ for $m=1,2$. Estimate $\pi_m^{(k)}$ by taking $\frac{1}{N}\sum_{i=1}^Nw_{m, i}$. Then, set
-\begin{align*}
-    \mu_1^{(k)}&=\frac{\frac{1}{N}\sum_{i=1}^Nw_{1,i}X^{(i)}}{\sum_{i=1}^Nw_{1, i}}\\
-    \mu_2^{(k)}&=\frac{\frac{1}{N}\sum_{i=1}^Nw_{2,i}X^{(i)}}{\sum_{i=1}^Nw_{2, i}}\\
-    \sigma^{(k)}&=\pi_1^{(k)}\frac{
+Begin with initial estimates $\mu_1^{(0)}$, $\mu_2^{(0)}$, $\sigma^{(0)}$, $\pi_1^{(0)}$, and $\pi_2^{(0)}$. Collectively, call these parameters $\eta$. In the $k$th step, let $w_{n, m}=f(Y=m|X_n;\eta^{(k-1)})$ for $m=1,2$. Then, our goal becomes to maximize $E_Y(\log L(\mu_1,\mu_2,\sigma,\pi_1,\pi_2;X,Y))$. 
+
+This log-likelihood, ignoring constant multipliers in the front, is 
+\[\sum_{i=1}^N\left(-\log(\sigma)+\log\pi(y_i)-\frac{(x_i-\mu_{y_i})^2}{2\sigma^2}\right)\]
+which we can rewrite as 
+\[\sum_{i=1}^N\sum_{m=1}^2\mathbb{I}(y_i=m)\left(-\log\sigma+\log\pi_m-\frac{(x_i-\mu_m)^2}{2\sigma^2}\right)\]
+where $\mathbb{I}$ is the indicatior function. The expectation of $\mathbb{I}(y_i=m)$ given the data $X$ and the previous parameters is $w_{i,m}$, so the expectation of the log-likelihood is
+\[\sum_{i=1}^N\sum_{m=1}^2w_{i,m}\left(-\log\sigma+\log\pi_m-\frac{(x_i-\mu_m)^2}{2\sigma^2}\right)\]
+Differentiating wrt $\pi_m$ gives 
+\[\sum_{i=1}^N\frac{w_{i,m}}{\pi_m}\]
+so the new estimate for $\pi_m$ is $\sum_{i=1}^Nw_{i,m}$.
+
+Differentiating wrt $\mu_m$ gives
+\[\sum_{i=1}^N-w_{i,m}\frac{-(x_i-\mu_m)}{\sigma^2}\]
+and setting this equal to zero produces
+\[\h{\mu}_m=\frac{\sum_{i=1}^Nw_{i,m}x_i}{\sum_{i=1}^Nw_{i,m}}\]
+Finally, differentiating wrt $\sigma$ produces
+\[\sum_{i=1}^N\sum_{m=1}^2w_{i,m}\left(\frac{(x_i-\mu_m)^2}{\sigma^3}-\frac{1}{\sigma}\right)\]
+Setting this equal to $0$ produces
+\[\h{\sigma}=\frac{\sum_{i=1}^N\sum_{m=1}^2w_{i,m}(x_i-\h{\mu}_m)^2}{\sum_{i=1}^N\sum_{m=1}^2w_{i,m}}\]
+\ssn{g}
+Since this is an iterative algorithm, we could set limits on the estimate of the likelihood and the covariance, then just interrupt the algorithm when those limits are exceeded. If the mean starts to move too close to a single data point, the covariance will tend to go to zero because that increases the likelihood. Resetting the mean to some other value and putting the covariance at some reasonable value would interrupt the cycle.
+\subsection*{2}
+\ssn{a}
+If $\rho$ is the permutation defined by $(x_1,x_2,\ldots,x_n)\mapsto(x_{m+1},\ldots,x_n,x_1,\ldots,x_m)$, then the inverse of $\rho$ maps $(x_1,\ldots,x_n)$ to $(x_{n-m+1},\ldots,x_n,x_1,\ldots,x_{n-m})$. For the rest of this problem, let $\rho\equiv\rho^{(1)}$ be the generator of this cyclic subgroup.
+\ssn{b}
+The joint distribution of $X,Y$ is $f(x,y)=\pi_yf(\rho^{-y}(x);\theta)$. Given data points $(x_1,y_1),\ldots,(x_N,y_N)$, the likelihood is
+\[\prod_{i=1}^N\pi(y_i)f(\rho^{-y_i}(x);\theta)=\prod_{i=1}^N\pi(y_i)\prod_{j=1}^df_j(x_{\rho^{-y_i}(j)};\theta_j)\]
+where $\rho(j)$ for some $j\in[1..d]$ is the usual action of the permutations on that set. Taking the log gives
+\[\sum_{i=1}^N\left(\log\pi(y_i)+\sum_{j=1}^d\log f_j(x_{\rho^{-y_i}(j)};\theta_j)\right)\]
+\ssn{c}
+Differentiating wrt $\theta_j$ and setting equal to zero, we have
+\[\sum_{i=1}^N\frac{f_j'(x_{\rho^{-y_i}(j)};\theta_j)}{f_j(x_{\rho^{-y_i}(j)};\theta_j)}=0\]
+which we cannot simplify further without knowledge of the form of $f$.
+\ssn{d}
+This sort of model has less free parameters than a general mixture, which would help to prevent overfitting. Also, it might reveal some sort of natural symmetry in the data, if we find that all the $\pi_y$ are similar.
+\ssn{f}
+For a Poisson distribution, we have $f(x;\theta)=\frac{\theta^xe^{-\theta}}{x!}$, so the log-likelihood becomes
+\[\sum_{i=1}^N\left(\log\pi_{y_i}+\sum_{j=1}^d\log \frac{\theta_j^{x_{\rho^{-y_i}(j)}}e^{-\theta_j}}{x_{\rho^{-y_i}(j)}!}\right)
+=\sum_{i=1}^N\left(\log\pi_{y_i}+\sum_{j=1}^dx_{\rho^{-y_i}(j)}\log\theta_j-\theta_j-\log(x_{\rho^{-y_i}(j)}!)\right)\]
+Writing this in terms of the indicator function on $y$, it becomes
+\[\sum_{i=1}^N\sum_{m=1}^d\mathbb{I}(y_i=m)\left(\log\pi_m+\sum_{j=1}^dx_{\rho^{-m}(j)}\log\theta_j-\theta_j-\log(x_{\rho^{-m}(j)})\right)\]
+The expectation of $\mathbb{I}(y_i=m)$ is $w_{i,m}=P(Y=m|X,\theta)$, which can be computed by plugging into the joint distribution. Then, the expectation of the log-likelihood becomes
+
+\[\sum_{i=1}^N\sum_{m=1}^dw_{i,m}\left(\log\pi_m+\sum_{j=1}^dx_{\rho^{-m}(j)}\log\theta_j-\theta_j-\log(x_{\rho^{-m}(j)})\right)\]
+Differentiating wrt $\pi_m$ and setting to zero gives $\h{\pi}_m=\frac{1}{N}\sum_{i=1}^Nw_{i,m}$. Differentiating wrt $\theta_j$ produces
+\[\sum_{i=1}^N\sum_{m=1}^d\left(w_{i,m}\frac{x_{\rho^{-m}(j)}}{\theta_j}-1\right)=\theta_j\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}-Nd\]
+so setting this to zero produces $\theta_j=\frac{Nd}{\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}}$
+%TODO: computation
+\subsection*{3}
 
 \end{document}
