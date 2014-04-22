@@ -4,6 +4,7 @@
 \usepackage{amssymb,amsfonts}
 \usepackage{multicol}
 \usepackage{graphicx}
+\usepackage{mathrsfs}
 \usepackage[cm]{fullpage}
 \newcommand{\tab}{\hspace*{5em}}
 \newcommand{\conj}{\overline}
@@ -25,6 +26,7 @@
 \nc{\inner}[2]{\langle #1,#2\rangle}
 \nc{\h}[1]{\widehat{#1}}
 \nc{\tl}[1]{\widetilde{#1}}
+\nc{\kl}{\mathcal{K}}
 \nc{\norm}[1]{\left\|{#1}\right\|}
 \begin{document}
 
@@ -114,5 +116,9 @@ Differentiating wrt $\pi_m$ and setting to zero gives $\h{\pi}_m=\frac{1}{N}\sum
 so setting this to zero produces $\theta_j=\frac{Nd}{\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}}$
 %TODO: computation
 \subsection*{3}
-
+\ssn{a}
+We have 
+\[\kl(X\|U)=\sum_{i=1}^KP(X=k)\log\left(\frac{K^{-1}}{P(X=k)}\right)=-\sum_{i=1}^KP(X=k)\log(KP(X=k))=-\sum_{i=1}^KP(X=k)\log P(X=k)-\log K\]
+so $\log K-\kl(X\|U)=\sum_{i=1}^KP(X=k)\log P(X=k)=H(X)$.
+\ssn{b}
 \end{document}
