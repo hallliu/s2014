@@ -136,7 +136,7 @@ Huh. Looks like I'm doing this backwards then. Writing $H(X|Y)$ as $\sum_{i=1}^K
     H(X|Y)-H(X)&=\sum_{i=1}^KP(i)\log P(i)-\sum_{i=1}^K\sum_{j=1}^KP(i,j)\log P(i|j)\\
                &=\sum_{i=1}^K \left(P(i)\log P(i)-\sum_{j=1}^KP(i,j)\log P(i|j)\right)\\
                &=\sum_{i=1}^K\sum_{j=1}^KP(i,j)\log\frac{P(i)}{P(i|j)}\\
-               &\leq\log\left(\sum_{i=1}^K\sum_{j=1}^K\frac{P(i,j)P(i)}{P(i|j)}\ \text{by Jensen's ineq}\\
+               &\leq\log\left(\sum_{i=1}^K\sum_{j=1}^K\frac{P(i,j)P(i)}{P(i|j)}\right)\ \text{by Jensen's ineq}\\
                &=\log\left(\sum_{i=1}^K\sum_{j=1}^KP(i)P(j)\right)\\
                &=0
 \end{align*}
