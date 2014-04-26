@@ -120,5 +120,27 @@ so setting this to zero produces $\theta_j=\frac{Nd}{\sum_{i=1}^N\sum_{m=1}^dw_{
 We have 
 \[\kl(X\|U)=\sum_{i=1}^KP(X=k)\log\left(\frac{K^{-1}}{P(X=k)}\right)=-\sum_{i=1}^KP(X=k)\log(KP(X=k))=-\sum_{i=1}^KP(X=k)\log P(X=k)-\log K\]
 so $\log K-\kl(X\|U)=\sum_{i=1}^KP(X=k)\log P(X=k)=H(X)$.
-\ssn{b}
+
+We know that $\kl(X\|U)\geq0$, with equality when $X=U$, so the upper bound for $H(X)$ is $\log K$. A lower bound for the entropy is $0$, since the log term will always be non-positive and the probability term will always be non-negative. This is a tight bound, since if we let $P(X=1)\to1$ and the other probabilities tend towards zero, since $\lim_{x\to0}\log x^x=0$ (for the $k\neq1$ terms) and $\lim_{x\to1}\log x^x=0$ (for the $k=1$ term).
+\ssn{b,c}
+\begin{align*}
+    H(X,Y)&=-\sum_{i=1}^K\sum_{j=1}^KP(i,j)\log P(i,j)\\
+          &=-\sum_{i=1}^K\sum_{j=1}^KP(i|j)P(j)\log \left(P(i|j)P(j)\right)\\
+          &=-\sum_{j=1}^KP(j)\sum_{i=1}^KP(i|j)\left(\log P(i|j) + \log P(j)\right)\\
+          &=-\sum_{j=1}^KP(j)\left(\sum_{i=1}^KP(i|j)\log P(i|j)+\log P(j)\sum_{i=1}^KP(i|j)\right)\\
+          &=H(X|Y)-\sum_{j=1}^KP(j)\log P(j)\\
+          &=H(X|Y)+H(Y)\\
+\end{align*}
+Huh. Looks like I'm doing this backwards then. Writing $H(X|Y)$ as $\sum_{i=1}^K\sum_{j=1}^KP(i,j)\log \P(i|j)$, we have 
+\begin{align*}
+    H(X|Y)-H(X)&=\sum_{i=1}^KP(i)\log P(i)-\sum_{i=1}^K\sum_{j=1}^KP(i,j)\log P(i|j)\\
+               &=\sum_{i=1}^K \left(P(i)\log P(i)-\sum_{j=1}^KP(i,j)\log P(i|j)\right)\\
+               &=\sum_{i=1}^K\sum_{j=1}^KP(i,j)\log\frac{P(i)}{P(i|j)}\\
+               &\leq\log\left(\sum_{i=1}^K\sum_{j=1}^K\frac{P(i,j)P(i)}{P(i|j)}\ \text{by Jensen's ineq}\\
+               &=\log\left(\sum_{i=1}^K\sum_{j=1}^KP(i)P(j)\right)\\
+               &=0
+\end{align*}
+so we have $H(X|Y)\leq H(X)$, with equality only when $\frac{P(i)}{P(i|j)}$ are equal for every $i,j$. This only happens when $P(i|j)=P(i)$ for all $i,j$ ($X$ and $Y$ independent), since otherwise we'd have some $i$ for which there exists $j_1$ and $j_2$ such that $P(i|j_1)>P(i)$ and $P(i|j_2)<P(i)$. Then, it follows that $H(X,Y)=H(X|Y)+H(Y)\leq H(X)+H(Y)$ with equality iff $X$ and $Y$ are independent.
+
+Intuitively, $H(X|Y)$ is the randomness of $X$ when we are given information about $Y$. We can't have the information make $X$ any more random than it already is, but it can be and is completely useless when $X$ and $Y$ are independent. Similarly, the randomness of two RVs, considered together, can't be any more than how random they each are added together, but it's the same if the two RVs don't carry information about each other. The inequality is a result of redundant information.
 \end{document}
