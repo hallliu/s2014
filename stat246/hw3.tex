@@ -112,9 +112,23 @@ The expectation of $\mathbb{I}(y_i=m)$ is $w_{i,m}=P(Y=m|X,\theta)$, which can b
 
 \[\sum_{i=1}^N\sum_{m=1}^dw_{i,m}\left(\log\pi_m+\sum_{j=1}^dx_{\rho^{-m}(j)}\log\theta_j-\theta_j-\log(x_{\rho^{-m}(j)})\right)\]
 Differentiating wrt $\pi_m$ and setting to zero gives $\h{\pi}_m=\frac{1}{N}\sum_{i=1}^Nw_{i,m}$. Differentiating wrt $\theta_j$ produces
-\[\sum_{i=1}^N\sum_{m=1}^d\left(w_{i,m}\frac{x_{\rho^{-m}(j)}}{\theta_j}-1\right)=\theta_j\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}-Nd\]
-so setting this to zero produces $\theta_j=\frac{Nd}{\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}}$
-%TODO: computation
+\[\sum_{i=1}^N\sum_{m=1}^d\left(w_{i,m}\frac{x_{\rho^{-m}(j)}}{\theta_j}-w_{i,m}\right)=\theta_j^{-1}\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}-N\]
+so setting this to zero produces $\theta_j=N^{-1}\sum_{i=1}^N\sum_{m=1}^dw_{i,m}x_{\rho^{-m}(j)}$, where there's an implicit $i$ subscript on the $x$
+
+Below are index plots of $\theta$ and $\pi$. The first row is for $N=10$, descending to $N=20$ and $N=200$, and the true values are at the bottom. As might be expected, some of the results differ from the true value by a cyclic permutation, since the model is invariant under such permutations. The $\theta$s are on the left, the $\pi$s on the right.
+
+\includegraphics[width=0.5\textwidth]{hw3_files/theta_10.png}
+\includegraphics[width=0.5\textwidth]{hw3_files/pi_10.png}
+
+\includegraphics[width=0.5\textwidth]{hw3_files/theta_20.png}
+\includegraphics[width=0.5\textwidth]{hw3_files/pi_20.png}
+
+\includegraphics[width=0.5\textwidth]{hw3_files/theta_200.png}
+\includegraphics[width=0.5\textwidth]{hw3_files/pi_200.png}
+
+\includegraphics[width=0.5\textwidth]{hw3_files/true_theta.png}
+\includegraphics[width=0.5\textwidth]{hw3_files/true_pi.png}
+
 \subsection*{3}
 \ssn{a}
 We have 
