@@ -50,7 +50,7 @@ def run_om_instance(line):
             sys.stdout.write(s_tree[3])
             i += 1
 
-        sys.stdout.write(' ')
+        sys.stdout.write('  ')
         if not q:
             sys.stdout.write(' ')
 
