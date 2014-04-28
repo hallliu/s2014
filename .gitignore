@@ -41,4 +41,5 @@ __pycache__
 *.mexa64
 *~
 *.so
+*.tgz
 cs250-proj/
