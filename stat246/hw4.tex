@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\usepackage{mathrsfs}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\subsection*{1}
+\ssn{a}
+The value to be minimized is the negative of the entropy, or
+\[\sum_{i=1}^K p_i\log p_i\]
+Our equality constraints are those imposed by the expectations and that the probabilities must sum to $1$. Define $T_0(x)=1$ for all $x$ and $\alpha_0=1$, so then we can write for $r=0..R$, we have the constraint 
+\[\alpha_r=\sum_{i=1}^KT_r(i)p_i\]
+which includes the sum constraint. Writing the $T$s as a vector in $\rn^K$, we can express this in the form $\alpha_r-p^TT_r=0$.
+
+Finally, we have an inequality constraint, which is that all probabilities must be nonnegative, or $p^Te_i\geq0$ for all $i=1..K$, where $e_i$ are the standard basis vectors
+\ssn{b}
+The Lagrangian for the system above is 
+\[\sum_{i=1}^K p_i\log p_i-\sum_{r=0}^R\lambda_r(\alpha_r-p^TT_r)-\sum_{i=1}^K\mu_ip^Te_i\]
+Its gradient wrt $p$ is 
+\[e+\log p+\sum_{r=0}^R\lambda_rT_r-\sum_{i=1}^K\mu_ie_i\]
+where $e$ is the vector of all $1$s and the log is taken componentwise. Setting this equal to $0$ gives
+\[\log p=-\sum_{r=0}^R\lambda_rT_r+\mu-e\]
+Componentwise, we have $p_i=\exp\left(\mu_i-\sum_{r=0}^R\lambda_r T_r(i)-1\right)$. If we let $u(i)=\openm e_i\\Te_i\closem$ ($T$ being the matrix of values of the $T_r$), then we can write
+\[p(i)=e^{-1}\exp\left(\openm \mu^T &\lambda^T\closem u(i)\right)\]
+which is in the form of an exponential family, with the Lagrange multiplies $\mu_i$ and $\lambda_i$ being the parameters.
+\ssn{c}
+If we look at $T$ as data rather than imposed constraints, then we can view $u$ as a function of $T$. The moment constraints $\alpha_i$ then become sufficient statistics, and we can compute the Lagrange multipliers as a ML problem rather than a constrained optimization problem.
+\subsection*{2}
+\ssn{a}
+The joint distribution of $Y$ and $Z$ is bivariate normal with mean $\openm\mu\\0\closem$ and covariance $\openm \sigma^2&0\\0&\sigma_1^2\closem$. We can obtain the joint distribution of $X=Y+Z$ and $Y$ from this by transforming via the matrix $\openm 1&0\\1&1\closem$, which results in a bivariate normal with mean $\openm\mu\\\mu\closem$ and covariance $\openm\sigma^2&\sigma^2\\\sigma^2&\sigma^2+\sigma_1^2\closem$ (this is arranged as $\openm Y\\X\closem$).
+\ssn{b}
+If we condition on $X=x$, then the density is univariate normal, with mean 
+\[\mu+\frac{\sigma}{\sqrt{\sigma^2+\sigma_1^2}}\frac{\sigma^2}{\sigma\sqrt{\sigma^2+\sigma_1^2}}(x-\mu)=\mu+\frac{\sigma^2}{\sigma^2+\sigma_1^2}(x-\mu)\]
+and variance $\left(1-\frac{\sigma^2}{\sigma^2+\sigma_1^2}\right)\sigma^2$
+\ssn{c}
+The marginal distribution of $X$ is normal with mean $\mu$ and variance $\sigma^2+\sigma_1^2$. Then, the ML estimate for $\mu$ is the sample mean of the observed $X^{(n)}$, and the ML estimate for $\sigma^2$ is the sample covariance minus $\sigma_1^2$.
+\ssn{d}
+First, we can write the joint density of $X$ and $Y$ as $f(X|Y=y)f(y)$. Since we have the identity $X=Y+Z$, $X|Y=y$ is normal with mean $y$ and variance $\sigma_1^2$. Thus, the log-likelihood of the complete data is 
+\[\sum_{i=1}^N\log f(x_i|Y=y_i)+\log f(y_i)=\sum_{i=1}^N-\log(2\pi)-\log\sigma_1-\log\sigma'-\frac{(x_i-y_i)^2}{2\sigma_1^2}-\frac{(y_i-\mu')^2}{2\sigma'^2}\]
+where the $\mu'$ and $\sigma'$ are yet-to-be determined. We can discard the constant terms then take the expectation wrt to $Y$ given $X$ to obtain
+\[-\sum_{i=1}^N\int_\rn p(y|x_i,\mu,\sigma^2)\left(\frac{(x_i-y)^2}{2\sigma_1^2}+\frac{(y-\mu')^2}{2\sigma'^2}+\log\sigma'\right)\ dy\]
+$p(y|x_i, \mu, \sigma^2)$ is a quantity calculated from the parameters of the previous iteration. As derived in (b), it is the normal density with the appropriate mean and variance (written above, not going to rewrite here). Abbreviate this function as $q_i(y)$ from now on.
+
+To find the next value of $\mu$, we differentiate wrt $\mu'$ and set to 0 to obtain
+\begin{align*}
+    0&=\sum_{i=1}^N\int_\rn \frac{1}{\sigma'^2}q_i(y)(y-\mu')\ dy\\
+    \mu'\sum_{i=1}^N\int_{\rn}q_i(y)\ dy&=\sum_{i=1}^N\int_\rn yq_i(y)\ dy\\
+    \mu'&=\frac{1}{N}\sum_{i=1}^NE(Y|x_i,\mu,\sigma^2)\\
+        &=\mu+\frac{1}{N}\frac{\sigma^2}{\sigma^2+\sigma_1^2}\sum_{i=1}^N(x_i-\mu)\\
+\end{align*}
+
+Now, differentiating wrt $\sigma'$ and setting to $0$ gives
+\begin{align*}
+    0&=\sum_{i=1}^N\int_\rn q_i(y)\left(\frac{(y-\mu')^2}{\sigma'^3}-\frac{1}{\sigma'}\right)\,dy\\
+    N&=\frac{1}{\sigma'^2}\sum_{i=1}^N\int_\rn q_i(y)(y-\mu')^2\,dy\\
+    \sigma'^2&=\frac{1}{N}\sum_{i=1}^NE_{Y|X=x_i}(Y-\mu')^2\\
+\end{align*}
+
+The expectation inside the sum expands to $\var(Y)+E(Y)^2-2\mu' E(Y)+\mu'^2$, so the final expression for $\sigma'^2$ is
+\[\mu'^2+\frac{1}{N}\sum_{i=1}^N\var(Y|x_i)+E(Y|x_i)^2-2\mu'E(Y|x_i)\]
+\ssn{e}
+\end{document}
