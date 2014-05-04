@@ -125,11 +125,21 @@ Having the same form as the thing we maximized already, we find that the new equ
     \pi_m&=\kappa\sum_{i=1}^N\left(w_{i,m}+\frac{1}{N}(\zeta_m-1)\right)\\
     p_{j,m}&=\frac{\sum_{i=1}^Nw_{i,m}\left(x_{i,j}+\frac{1}{N}(\alpha-1)\right)}{\left(\frac{2}{N}(\alpha-1)+1\right)\sum_{i=1}^Nw_{i,m}}
 \end{align*}
-where $\kappa$ is some constant that makes the $\pi_m$ sum to 1.
+where $\kappa$ is some constant that makes the $\pi_m$ sum to 1. In practice, all the $\zeta_m$ were set to $2$, as were all the $\alpha$s
 
 For computational purposes in computing the $w_{i,m}$, instead of computing
 \[\frac{P(x_i|Y=m)P(Y=m)}{\sum_{j=1}^MP(x_i|Y=j)P(Y=j)}\]
 compute instead
 \[\log (P(x_i|Y=m)P(Y=m))=\sum_{j=1}^d\left(x_{i,j}\log p_{j,m}+(1-x_{i,j})\log(1-p_{j,m})\right)+\log\pi_m\]
 for each pair $i,m$ and call them the $\alpha_{i,m}$. For each $i$, calculate $l_i=\max_m\alpha_{i,m}$, and set $w_{i,m}=\frac{\exp(\alpha_{i,m}-l_i)}{\sum_{m'}\exp(\alpha_{i,m'}-l_i)}$.
+
+Now for the results. The fitted probability vectors are shown below:
+
+\includegraphics[width=0.9\textwidth]{hw4_files/M1_princip.png}
+
+\includegraphics[width=0.9\textwidth]{hw4_files/M3_princip.png}
+
+\includegraphics[width=0.9\textwidth]{hw4_files/M5_princip.png}
+
+In classifying the test set, I went class-by-class and computed the likelihoods of each data vector given the parameters that were fitted to a certain class. The likelihoods were computed by exponentiating the log-likelihood, which is more numerically stable than just multiplying together the 900 Bernoulli likelihoods. The error rates observed were $0.2041$ for $M=1$, $0.1396$ for $M=3$, and $0.1383$ for $M=5$. This indicates that the digits can already be described quite well by a mixture of three components (which, looking at the images above, correspond to variations in how people draw the digits).
 \end{document}

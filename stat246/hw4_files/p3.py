@@ -19,10 +19,10 @@ def load_digits(case='tr'):
 '''
 Takes a N by 900 matrix (each row is a data vector), and trains EM on it.
 '''
-def em_map(data, M):
+def em_map(data, M, epsilon=1e-5):
     # Set the zetas to be all 2 and set alpha to 2
-    alpha = 2
-    zeta = 2
+    alpha = 2.0
+    zeta = 2.0
 
     N = data.shape[0]
     d = data.shape[1]
@@ -72,7 +72,7 @@ def calc_cond_probs(data, pis, bern_probs):
     N = data.shape[0]
     weights = np.zeros((N,M), dtype='float64')
 
-    log_joints = np.dot(data.T, np.log(bern_probs)) + np.dot((1-data).T, np.log(1-bern_probs))
+    log_joints = np.dot(data, np.log(bern_probs)) + np.dot((1-data), np.log(1-bern_probs))
     # fugly hack that exploits a numpy bug
     try:
         log_joints.T += np.log(pis)
@@ -92,3 +92,79 @@ def calc_cond_probs(data, pis, bern_probs):
         pass
 
     return weights
+
+'''
+Runs the model for all 10 digits, on M=1,3,5, plots the components, and returns
+the parameters.
+'''
+def train_on_digits():
+    import matplotlib.pyplot as plt
+    train_set = load_digits('tr')
+
+    pis_1 = []
+    probs_1 = []
+    plt.figure(figsize=(8,3))
+    for i in range(10):
+        plt.subplot(2, 5, i+1)
+        plt.axis('off')
+        pis, probs = em_map(train_set[i], 1)
+        plt.imshow(probs[:,0].reshape(30, 30), cmap=plt.cm.Greys)
+        pis_1.append(pis)
+        probs_1.append(probs)
+    #plt.savefig('M1_princip.png', bbox_inches='tight')
+
+    pis_3 = []
+    probs_3 = []
+    plt.figure(figsize=(8.5,3))
+    for i in range(10):
+        pis, probs = em_map(train_set[i], 3)
+        for j in range(3):
+            plt.subplot(3, 10, j*10+i+1)
+            plt.axis('off')
+            plt.imshow(probs[:,j].reshape(30, 30), cmap=plt.cm.Greys)
+        pis_3.append(pis)
+        probs_3.append(probs)
+    #plt.savefig('M3_princip.png', bbox_inches='tight')
+
+    pis_5 = []
+    probs_5 = []
+    plt.figure(figsize=(8.5,5))
+    for i in range(10):
+        pis, probs = em_map(train_set[i], 5)
+        for j in range(5):
+            plt.subplot(5, 10, j*10+i+1)
+            plt.axis('off')
+            plt.imshow(probs[:,j].reshape(30, 30), cmap=plt.cm.Greys)
+        pis_5.append(pis)
+        probs_5.append(probs)
+    #plt.savefig('M5_princip.png', bbox_inches='tight')
+
+    pis_1 = np.vstack(pis_1)
+    pis_3 = np.vstack(pis_3)
+    pis_5 = np.vstack(pis_5)
+
+    return ((pis_1, probs_1), (pis_3, probs_3), (pis_5, probs_5))
+
+'''
+Loads the test files and classifies them using argmax of likelihoods, and proceeds
+to compute the error rates for M=1,3,5
+'''
+def perform_classifications(learned_params):
+    test_data = load_digits('te')
+    for (i, M) in enumerate([1,3,5]):
+        pis = learned_params[i][0]
+        probs = learned_params[i][1]
+        error_count = 0
+        # Loop through the test classes
+        for j in range(10):
+            class_data = test_data[j]
+            likelihoods_by_class = np.zeros((1000, 10))
+            # Loop through the trained classes to evaluate likelihoods
+            for k in range(10):
+                log_likelihoods = np.dot(class_data, np.log(probs[k])) + np.dot(1-class_data, np.log(1-probs[k]))
+                likelihoods_by_class[:, k] = (np.exp(log_likelihoods) * pis[k]).sum(1)
+            predicted_classes = np.argmax(likelihoods_by_class, 1)
+            error_count += np.where(predicted_classes != j)[0].shape[0]
+        
+        error_rate = error_count / 10000.
+        print 'Error rate for M={0} is {1}'.format(M, error_rate)
