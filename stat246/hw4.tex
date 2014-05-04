@@ -122,7 +122,14 @@ after removing constants irrelevant to maximization. Folding the sums in gives
 \[\sum_{i=1}^N\sum_{m=1}^M\left(w_{i,m}+\frac{1}{N}(\zeta_m-1)\right)\log\pi_m+\sum_{i=1}^N\sum_{m=1}^Mw_{i,m}\sum_{j=1}^d\left(x_{i,j}+\frac{1}{N}(\alpha-1)\right)\log p_{j,m}+\left(1-x_{i,j}+\frac{1}{N}(\alpha-1)\right)\log(1-p_{j,m})\]
 Having the same form as the thing we maximized already, we find that the new equations for $\pi_m$ and $p_{j,m}$ are
 \begin{align*}
-    \pi_m&=\frac{1}{N}\sum_{i=1}^N\left(w_{i,m}+\frac{1}{N}(\zeta_m-1)\right)\\
+    \pi_m&=\kappa\sum_{i=1}^N\left(w_{i,m}+\frac{1}{N}(\zeta_m-1)\right)\\
     p_{j,m}&=\frac{\sum_{i=1}^Nw_{i,m}\left(x_{i,j}+\frac{1}{N}(\alpha-1)\right)}{\left(\frac{2}{N}(\alpha-1)+1\right)\sum_{i=1}^Nw_{i,m}}
 \end{align*}
+where $\kappa$ is some constant that makes the $\pi_m$ sum to 1.
+
+For computational purposes in computing the $w_{i,m}$, instead of computing
+\[\frac{P(x_i|Y=m)P(Y=m)}{\sum_{j=1}^MP(x_i|Y=j)P(Y=j)}\]
+compute instead
+\[\log (P(x_i|Y=m)P(Y=m))=\sum_{j=1}^d\left(x_{i,j}\log p_{j,m}+(1-x_{i,j})\log(1-p_{j,m})\right)+\log\pi_m\]
+for each pair $i,m$ and call them the $\alpha_{i,m}$. For each $i$, calculate $l_i=\max_m\alpha_{i,m}$, and set $w_{i,m}=\frac{\exp(\alpha_{i,m}-l_i)}{\sum_{m'}\exp(\alpha_{i,m'}-l_i)}$.
 \end{document}
