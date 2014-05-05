@@ -87,4 +87,5 @@ which is the final form of the marginal distribution of $z$ conditional upon the
 
 Now that we have the distribution on all of the $z$s, we can evaluate $P(z_{nd}=k|z_{-(n,d)},w)$ in the same way as in (2a): first calculate the joint likelihood by plugging in what we want for $k$ and leaving the other $z$s as-is, then evaluate for all other values of $k$ and sum together to obtain the marginal likelihood. Taking their ratio will yield the conditional likelihood.
 \ssn{b}
+This conditional likelihood gives us a way to use Gibbs sampling to sample values of $z$ with only dependence on the words and preassigned topics. As before, with a large number of samples of the $z$s, we can calculate an estimate for $\beta$ by averaging the within-topic word counts that each $z$ provides us with.
 \end{document}
