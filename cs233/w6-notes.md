@@ -26,3 +26,9 @@ Chubby lock paper differs from prev papers, lots of empirical evidence. What is 
 * FIrst description of a multi-tenant system -- reliability in the face of unexpected use
 
 
+What would convince you that a system is correct, without resorting to mathematical proof?
+    * testing? paxos made live has a lot of data on testing that seem helpful. Theyve convinced themselves that its correct
+
+Why the "gap between theory and implementation"? 
+    * Porbably always a sizable gap between a theoretical algorithm and a implementation of it that is testable.
+    * 
