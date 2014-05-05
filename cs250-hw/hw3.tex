@@ -1,0 +1,90 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage[cm]{fullpage}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\newcommand{\zn}{\mathbb{Z}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\begin{document}
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\subsection*{2}
+\ssn{a}
+To derive the conditional distribution, first we need the joint distribution. Let $V$ be the number of words in the vocabulary. Let $\beta$ be a $K\times V$ matrix (each row corresponding to a topic). Let $\theta$ be a $D\times K$ matrix, each row corresponding to a document. Let $z$ and $w$ be $D\times N$ matrices, containing the index/topic of the particular word position in that particular document. If one of these matrices is written with a single subscript, it refers to that row of the matrix.
+
+The joint distribution corresponding to the graphical description is
+\[\prod_{i=1}^KP(\beta_i;\alpha)\cdot\prod_{d=1}^D\left(P(\theta_d;\eta)\prod_{n=1}^NP(z_{d,n}|\theta_d)P(w_{d,n}|z_{d,n},\beta)\right)\]
+where $\alpha$ and $\eta$ are fixed parameters. If we plug in the corresponding pdfs for each parameter, we obtain the equation for the joint density:
+\[\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\prod_{d=1}^D\left(\left(\frac{1}{C(\alpha)}\prod_{i=1}^K\theta_{dj}^{\eta-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\beta_{z_{dn},w_{dn}}\right)\]
+where $C(x)$ is the integral of the Dirichlet distribution without the normalizing constant.
+
+Now, we want to integrate this over the space that all the $\theta$s lie in. Let $\Omega_\theta$ denote this space, and let $\Delta_d$ denote the simplex in which $\theta_d$ lies. We then have the integral
+\begin{align*}
+    &\int_{\Omega_\theta}\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\prod_{d=1}^D\left(\left(\frac{1}{C(\alpha)}\prod_{j=1}^K\theta_{dj}^{\alpha-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\beta_{z_{dn},w_{dn}}\right)\\
+    &=\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\int_{\Omega_\theta}\prod_{d=1}^D\left(\left(\frac{1}{C(\alpha)}\prod_{j=1}^K\theta_{dj}^{\alpha-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\beta_{z_{dn},w_{dn}}\right)\\
+    &=\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\prod_{d=1}^D\int_{\Delta_d}\left(\left(\frac{1}{C(\alpha)}\prod_{j=1}^K\theta_{dj}^{\alpha-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\beta_{z_{dn},w_{dn}}\right)\\
+    &=\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\prod_{d=1}^D\left(\prod_{n=1}^N\beta_{z_{dn},w_{dn}}\right)\int_{\Delta_d}\left(\left(\frac{1}{C(\alpha)}\prod_{j=1}^K\theta_{dj}^{\alpha-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\right)\\
+\end{align*}
+Let $n$ be a $D\times K$ matrix, with $n_{ij}$ being the number of times topic $j$ appears in document $i$. Then, the integral above (omitting the constant multiplier out front) can be rewritten as
+\[\int_{\Delta_d}\left(\frac{1}{C(\alpha)}\prod_{j=1}^K\theta_{dj}^{\alpha-1+n_{dj}}\right)\]
+which, using the Dirichlet normalizing constant, can be rewritten as
+\[\frac{1}{C(\alpha)}\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\]
+so we can write the marginal, excluding $\theta$, as
+\[\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\prod_{d=1}^D\left(\prod_{n=1}^N\beta_{z_{dn},w_{dn}}\right)\frac{1}{C(\alpha)}\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\]
+Fix some document $d$, since we're working locally. The marginal, given this document alone, is the same as the above expression, but with the product over $d$ omitted:
+\[\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{i=1}^V\beta_{ij}^{\eta-1}\right)\cdot\frac{1}{C(\alpha)}\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\left(\prod_{n=1}^N\beta_{z_{dn},w_{dn}}\right)\]
+
+Now, to find $P(z_{dn}|z_{d,-n},\beta,w_d;\alpha,\eta)$, we divide the joint likelihood of all of these by the marginal distribution of $z_{d,-n},\beta,w_d$. For the joint, we already have the likelihood in the marginal distribution derived above -- if we wish to evaluate the joint likelihood for a particular value of $z_{dn}$, we plug it in to the last term above while holding all the other $z_{d,*}$ terms constant. Finally, to find the marginal, we just have to evaluate $\sum_{k=1}^KP(z_{dn}=k,z_{d,-n},\beta,w_d;\alpha,\eta)$, and dividing the two gives an expression for the desired conditional probability.
+\ssn{b}
+Gibbs sampling iteratively samples from the above conditional probability to obtain samples from the overall distribution of $z_d$ given $\beta$ and $w_d$. Thus, if we obtain a large number of samples of the topics assigned to words within the document, we can estimate the proportion of each topic that exists within the document, which is what $\theta_d$ is.
+\subsection*{3}
+The expression inside the integral is the joint distribution of $w_d$, $z_d$, and $\theta_d$, conditional upon $\beta$ and the fixed parameter $\alpha$. The joint distribution of these variables is written above in the beginning of (2); obtaining the conditional upon $\beta$ simply involves dividing by the marginal distribution of $\beta$. Fortunately, the joint distribution contains that marginal as a multiplicative term, and the conditional is simply 
+\[\cdot\prod_{d=1}^D\left(\left(\frac{1}{C(\alpha)}\prod_{i=1}^K\theta_{dj}^{\eta-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\beta_{z_{dn},w_{dn}}\right)\]
+Removing the dependence upon $d$ gives us
+\[\left(\frac{1}{C(\alpha)}\prod_{i=1}^K\theta_{dj}^{\eta-1}\right)\prod_{n=1}^N\theta_{d,z_{dn}}\beta_{z_{dn},w_{dn}}\]
+whose integral over $\Delta_d$ was evaluated in (2). The result is
+\[\frac{1}{C(\alpha)}\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\left(\prod_{n=1}^N\beta_{z_{dn},w_{dn}}\right)\]
+\subsection*{4}
+\ssn{a}
+Continuing from the marginal distribution obtained in (2a), we now want to integrate out $\beta$. Let $\Omega_\beta$ indicate the space in which all the $\beta$s sit, and let $\Delta_k$ denote the simplex in which $\beta_k$ lies. Then, we have the integral
+\begin{align*}
+    &\int_{\Omega_\beta}\prod_{i=1}^K\left(\frac{1}{C(\eta)}\prod_{j=1}^V\beta_{ij}^{\eta-1}\right)\cdot\prod_{d=1}^D\left(\prod_{n=1}^N\beta_{z_{dn},w_{dn}}\right)\frac{1}{C(\alpha)}\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\\
+    &=\frac{1}{C(\alpha)^D}\frac{1}{C(\eta)^K}\left(\prod_{d=1}^D\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\right)\int_{\Omega_\beta}\left(\prod_{i=1}^K\prod_{j=1}^V\beta_{ij}^{\eta-1}\right)\left(\prod_{d=1}^D\prod_{n=1}^N\beta_{z_{dn},w_{dn}}\right)\\
+\end{align*}
+Let $r_{ij}$ denote the number of times topic $i$ is assigned to word $j$ globally. This term is then a function of the parameter $z$. With this, we can merge the products together to obtain
+\begin{align*}
+    &\frac{1}{C(\alpha)^D}\frac{1}{C(\eta)^K}\left(\prod_{d=1}^D\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\right)\int_{\Omega_\beta}\left(\prod_{i=1}^K\prod_{j=1}^V\beta_{ij}^{\eta-1+r_{ij}}\right)\\
+    &=\frac{1}{C(\alpha)^D}\frac{1}{C(\eta)^K}\left(\prod_{d=1}^D\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\right)\left(\prod_{i=1}^K\int_{\Delta_i}\prod_{j=1}^V\beta_{ij}^{\eta-1+r_{ij}}\right)\\
+\end{align*}
+The inner product has the form of a Dirichlet pdf, so we can evaluate the integral to obtain
+\[\frac{1}{C(\alpha)^D}\frac{1}{C(\eta)^K}\left(\prod_{d=1}^D\frac{\prod_{j=1}^K\Gamma(\alpha+n_{dj})}{\Gamma(\sum_{j=1}^N\alpha+n_{dj})}\right)\left(\prod_{i=1}^K\frac{\prod_{j=1}^V\Gamma(\eta+r_{ij})}{\Gamma\left(\sum_{j=1}^V(\eta+r_{ij})\right)}\right)\]
+which is the final form of the marginal distribution of $z$ conditional upon the data. The dependence of the above expression on the $z_{dn}$ and the words $w_{dn}$ comes in the form of the $r_{ij}$, which are word counts per topic.
+
+Now that we have the distribution on all of the $z$s, we can evaluate $P(z_{nd}=k|z_{-(n,d)},w)$ in the same way as in (2a): first calculate the joint likelihood by plugging in what we want for $k$ and leaving the other $z$s as-is, then evaluate for all other values of $k$ and sum together to obtain the marginal likelihood. Taking their ratio will yield the conditional likelihood.
+\ssn{b}
+\end{document}
