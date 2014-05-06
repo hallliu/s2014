@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage[margin=0.2in]{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\newcommand{\nc}{\newcommand}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\nc{\pd}{\partial}
+\nc{\del}{\nabla}
+\nc{\ep}{\epsilon}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\cov}{cov}
+\begin{document}
+\small
+Bayes classification rule for discrete cases: maximize $P(Y=m|X)$ over all possible values $m$. Simplifies to maximizing $P(X|Y=m)P(Y=m)$ because $P(X)$ is invariant across $m$s. Useful to think about this in terms of regions in the space that get classified into certain areas. Expected loss is integral of loss times probability over entire space. Useful to evaluate this in terms of the regions.
+
+Multivariate normal distribution: pdf is $\frac{1}{(2\pi|\Sigma|)^{d/2}}\exp\left(\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)\right)$. the MGF is $\exp\left(\mu^Tt+\frac{1}{2}t^T\Sigma t\right)$. If $x\sim N(\mu,\Sigma)$, then an affine transform $c+Bx$ is distributed as $N(B\mu+c, B\Sigma B^T)$. If the mean is partitioned as $\openm \mu_1\\\mu_2\closem$ and the covariance is partitioned as $\openm\Sigma_{11}&\Sigma_{12}\\\Sigma_{21}&\Sigma_{22}\closem$, then the distribution of the first part conditional on the second is normal with mean $\mu_1+\Sigma_{12}\Sigma_{22}^{-1}(x_2-\mu_2)$ and covariance $\Sigma_{11}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}$. 
+
+ML estimates for normal RVs: use trace trick to write $x^T\Sigma^{-1} x=\tr(xx^T\Sigma^{-1})$. Proven in class that the argmin over $\Sigma$ of $-\log|\Sigma|+\tr(A\Sigma^{-1})$ is given by $\Sigma=A$. Proof of this is done by taking square root of $A$, letting $B=A^{1/2}\Sigma^{-1}A^{1/2}$, and maximizing on eigenvalues of $B$.
+
+QDA and LDA refer to estimating decision boundaries between multivariate normals. Use a pooled covariance for LDA. Pooled covariance MLE is the weighted average of the class covariances. Prove using above.
+
+Exponential family: distributions can be written as $p(x)=h(x)g(\eta)\exp(\eta^Tu(x))$, where $\eta$ are the parameters. The fact that this is a distribution leads to the identity $g(\eta)^{-1}=\int h(x)\exp(\eta^Tu(x))\,dx$, which is useful. This leads to $E(u(x))=-\nabla \log g(\eta)$ and $\cov(u(x))$ is the Hessian of the negative log of $g$. Prove by letting $g(\eta)=\exp(-A(\eta))$, using the integral identity, and differentiating wrt $g$ twice. Exponential family has a conjugate prior $f(\chi,\nu)g(\eta)^\nu\exp(\nu\eta^T\chi)$.
+
+A few distributions as exponential families: $N(\mu,\Sigma)$ has $h=(2\pi)^{-d/2}$, $g=|\Sigma|^{-d/2}\exp(-\frac{1}{2}\mu^T\Sigma^{-1}\mu)$, $\eta=\openm\Sigma^{-1}\mu\\-\frac{1}{2}\text{flat}(\Sigma^{-1})\closem$, and $T(x)=\openm x\\\text{flat}(xx^T)\closem$. Binomial with parameters $n,p$ is $\binom{n}{x}\exp\left(x\log\left(\frac{p}{1-p}\right)+n\log(1-p)\right)$. Gamma distr with shape $\alpha$ and rate $\beta$ has $h(x)=1$,$g(\eta)=\frac{\Gamma(\alpha)}{\beta^\alpha}$, $\eta=\openm\alpha-1\\-\beta\closem$, and $u(x)=\openm\log x\\x\closem$. Beta distribution with parameters $\alpha,\beta$ has $h(x)=\frac{1}{x(1-x)}$, $g(\eta)=\frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)}$, $\eta=\openm\alpha\\\beta\closem$, and $u(x)=\openm\log x\\\log(1-x)\closem$.
+
+EM algorithm steps: First write the complete-data log likelihood. Then take the expectation over the hidden variable conditioned by the previous iteration and the data, which will give an expression involving the conditional density of $Y$ and a sum. Finally, take derivatives to get a ML estimate of this expectation and update parameters. If using Bayesian priors to do a MAP estimation, maximize the expectation of the log-likelihood plus the log of the prior. Probably should make it a conjugate prior.
+
+Entropy of a distribution $q$ is $H(q)=-\sum_yq(y)\log q(y)$. KL-divergence is $K(q\|p)=-H(q)-E_q(\log p)=\sum_y\log\frac{q(y)}{p(y)}q(y)$. Jensen's inequality for a convex $f$ states that $f\left(\frac{\sum a_ix_i}{\sum a_i}\right)\leq\frac{\sum a_if(x_i)}{\sum a_i}$, and reversed for concave. If convexity is strict, then equality holds iff all the $x$s are equal.
+
+Graphical models: modeled by a DAG that induces a chain of multiplied conditional probabilities. Markov blanket of a set of nodes is the union of the set of its parents, children, and nodes which share children with members of the set (not including the set itself). If $A$ is the set, $\conj{A}$ is its Markov blanket, then for any $n\in V-A-\conj{A}$, $n$ is conditionally independent from anything in $A$.
+
+A set $C$ $d$-separates $A$ and $B$ if for any path from $A$ to $B$, there's either a T-T or H-T node in the path that's in $C$ or there's a H-H node in the path which is not in $C$ and its descendants are not in $C$/
+
+Hidden Markov models -- insert graph below
+\end{document}
