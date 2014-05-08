@@ -1,0 +1,15 @@
+# Same as paxos.accept-overwrite.1 but with Proposer 1
+# and Acceptor 1 recovering at the end.
+#
+# Notice how Acceptor 1 had originally accepted value 42
+# but its accepted value is legitimately overwritten because
+# it agrees to participate in a higher-numbered ballot.
+
+2 3 50
+0 PROPOSE 1 42
+8 FAIL PROPOSER 1
+8 FAIL ACCEPTOR 1
+10 PROPOSE 2 0
+21 RECOVER PROPOSER 1
+21 RECOVER ACCEPTOR 1
+0 END

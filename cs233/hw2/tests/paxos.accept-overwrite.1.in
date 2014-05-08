@@ -1,0 +1,24 @@
+# This example shows a case where an acceptor (Acceptor 1)
+# accepts a value, but it is possible for a majority of
+# other acceptors to accept a different value.
+#
+# Basically, Proposer 1 proposes the value 42, which
+# is accepted by Acceptor 1. However, before Acceptor 2 and 3
+# receive the ACCEPT messages, both Proposer 1 and Acceptor 1
+# fail.
+# 
+# Then, Proposer 2 (presumably detecting that no progress is being made)
+# proposes the "null value" zero. However, since Acceptor 1
+# has failed, knowledge of the previously accepted knowledge
+# has been lost. However, this is fine, because a *majority*
+# of acceptors has not yet accepted that value.
+#
+# The outcome will simply be that the "null value" will be
+# agreed upon.
+
+2 3 25
+0 PROPOSE 1 42
+8 FAIL PROPOSER 1
+8 FAIL ACCEPTOR 1
+10 PROPOSE 2 0
+0 END

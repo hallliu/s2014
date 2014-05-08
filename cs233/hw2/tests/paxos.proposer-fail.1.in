@@ -1,0 +1,13 @@
+# Example with two proposers.
+#
+# The first proposer fails after one of the acceptors has
+# accepted the value it proposed.
+#
+# The second proposer proposes a new value, but must
+# accept the first proposer's value.
+
+2 3 25
+0 PROPOSE 1 42
+8 FAIL PROPOSER 1
+11 PROPOSE 2 37
+0 END

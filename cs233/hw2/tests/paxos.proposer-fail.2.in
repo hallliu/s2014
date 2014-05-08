@@ -1,0 +1,10 @@
+# Example with two proposers.
+# 
+# Same as paxos.proposer-fail.1.in, but with P1 recovering.
+
+2 3 50
+0 PROPOSE 1 42
+8 FAIL PROPOSER 1
+11 PROPOSE 2 37
+26 RECOVER PROPOSER 1
+0 END

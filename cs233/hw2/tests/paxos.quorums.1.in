@@ -1,0 +1,29 @@
+# Example with two proposers and five acceptors.
+#
+# Each proposer has a different 3-acceptor quorum (which,
+# by definition, must have one acceptor in common)
+#
+# The system starts out with acceptors 4 and 5 in a failed state.
+# Proposer 1 first obtains a majority for its proposed value (42)
+# with acceptors 1, 2, 3. However, Proposer 1 fails before
+# the ACCEPTED messages are delivered. 
+#
+# Then, acceptors 1 and 2 fail, but acceptors 4 and 5 come
+# back online.
+#
+# Proposer 2 (presumably detecting that no progress is being made)
+# proposes the "null value" zero. If no value had been accepted,
+# then agreeing on the "null value" will have no effect on the
+# system. If not, the previously agreed value will be used.
+
+2 5 30
+0 FAIL ACCEPTOR 4
+0 FAIL ACCEPTOR 5
+0 PROPOSE 1 42
+10 FAIL PROPOSER 1
+10 FAIL ACCEPTOR 1
+10 FAIL ACCEPTOR 2
+10 RECOVER ACCEPTOR 4
+10 RECOVER ACCEPTOR 5
+13 PROPOSE 2 0
+0 END

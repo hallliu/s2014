@@ -1,0 +1,21 @@
+# Example with two proposers and five acceptors.
+#
+# Same as paxos.quorums.2 but with the remaining acceptors
+# (1 and 2) recovering at the end, with all the delayed
+# messages being delivered. Despite the delay in messages,
+# both Proposers agree on the same value.
+
+2 5 55
+0 FAIL ACCEPTOR 4
+0 FAIL ACCEPTOR 5
+0 PROPOSE 1 42
+10 FAIL PROPOSER 1
+10 FAIL ACCEPTOR 1
+10 FAIL ACCEPTOR 2
+10 RECOVER ACCEPTOR 4
+10 RECOVER ACCEPTOR 5
+13 PROPOSE 2 0
+28 RECOVER PROPOSER 1
+37 RECOVER ACCEPTOR 1
+37 RECOVER ACCEPTOR 2
+0 END
