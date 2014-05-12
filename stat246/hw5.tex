@@ -1,0 +1,72 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\usepackage{mathrsfs}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+
+\subsection*{1}
+\ssn{a}
+$P(D)P(B_1)P(B_2)P(Y|D)P(X_1|Y,B_1)P(X_2|Y,B_2)$
+\ssn{b}
+\[\sum_DP(D)P(B_1)P(B_2)P(Y|D)P(X_1|Y,B_1)P(X_2|Y,B_2)=P(B_1)P(B_2)P(X_1|Y,B_1)P(X_2|Y,B_2)\sum_DP(Y|D)P(D)\]
+    \[=P(B_1)P(B_2)P(Y)P(X_1|Y,B_1)P(X_2|Y,B_2)\]
+where $P(Y)$ is the marginal of $Y$ wrt its joint distribution with $D$. $B_1$ and $Y$ are independent under this marginal since they have separate factors.
+\ssn{c}
+Summing over $B_1$, $B_2$ gives
+\[P(Y)\left(\sum_{B_1}P(B_1)P(X_1|Y,B_1)\right)\left(\sum_{B_2}P(B_2)P(X_2|Y,B_2)\right)=P(Y)\left(\sum_{B_1}P(X_1,B_1|Y)\right)\left(\sum_{B_2}P(X_2,B_2|Y)\right)\]
+\[=P(Y)P(X_1|Y)P(X_2|Y)\]
+$X_1$ and $X_2$ are conditionally independent given $Y$, since the only path from $X_1$ to $X_2$ goes through and is blocked by $Y$.
+\subsection*{2}
+\ssn{a}
+\vspace{150pt}
+The $(Y_i,X_i)$ form a HMM because marginalizing over the $Z_i$ and the $U_i$ simply consists of removing the nodes, since they're all ancestor nodes. Removing them gives a graph in the HMM form.
+\ssn{b}
+We can write $Y_i=Y_1+\sum_{j=1}^{i-1}U_j$ and $X_i=Y_1+\sum_{j=1}^{i-1}U_j+Z_n$. Since these are both linear combinations of the mutually independent variables $Y_1,U_{1:n},Z_{1:n}$, we have that the set of variables $X_{1:n},Y_{1:n},Z_{1:n}$ and $U_{1:n}$ are produced by a linear transformation of $Y_1,U_{1:n},Z_{1:n}$, which are jointly normal. Thus all the variables are jointly normal. Further, since all the ancestors have mean 0, applying a linear transformation to that mean vector will also result in a mean vector of zero for all the variables.
+\ssn{c}
+We have $Y_s=Y_1+\sum_{i=1}^{s-1}U_i$ and $Y_{n+1}=Y_1+\sum_{i=1}^nU_i$. All these variables are mutually independent, so their covariance is
+\[\cov(Y_s,Y_{n+1})=\var(Y_1)+\sum_{i=1}^{s-1}\var(U_i)=\sigma_1^2+(s-1)\sigma_u^2\]
+Writing $X_s$ as $Y_s+Z_s$, we have $\cov(X_s, Y_{n+1})=\cov(Y_s,Y_{n+1})+\cov(Z_s, Y_{n+1})$, and the second term is zero, so the covariance is the same as $\cov(Y_s, Y_{n+1})$.
+
+\[\var(Y_{n+1})=\cov(Y_{n}+U_n, Y_n+U_n)=\var(Y_n)+\var(U_n)=a_n+\sigma_u^2\]
+\[\cov(X_{n+1},Y_{n+1})=\cov(Y_{n+1}+Z_{n+1},Y_{n+1})=\var(Y_{n+1})+0=a_n+\sigma_u^2\]
+\[\var(X_{n+1})=\cov(Y_{n+1}+Z_{n+1},Y_{n+1}+Z_{n+1})=\var(Y_{n+1})+\var(Z_{n+1})=a_n+\sigma_u^2+\sigma_z^2\]
+\[\cov(X_n, X_{n+1})=\cov(Y_n+Z_n,Y_{n+1}+Z_{n+1})=\cov(Y_n,Y_{n+1})=\sigma_1^2+(n-1)\sigma_u^2\]
+\ssn{d}
+$V_{n+1}$ can be written as a block matrix $\openm V_n&e\\e^T&\var(X_{n+1})\closem$. The $e$ vector has components $e_i=\cov(X_i,X_{n+1})=\cov(X_i,Y_{n+1}+Z_{n+1})=\sigma_1^2+(i-1)\sigma_u^2$ for $i\in[1..n]$. $b_{n+1}$ is a $n+1$-long vector, with $i$th component equal to $\cov(X_i, Y_{n+1})=\sigma_1^2+(i-1)\sigma_u^2$ for $i\neq n-1$ and $\cov(X_{n+1},Y_{n+1})=\var(Y_{n+1})=a_n+\sigma_u^2$ for the $n+1$th component. Finally, we have $a_{n+1}=a_n+\sigma_u^2$. 
+\ssn{e}
+Assume that the covariance $C_{n+1}$ is available -- there exists an efficient recursive algorithm to do so. Write it as the block matrix
+\[\openm V_n&e&b_{n+1}^{(1:n)}\\e^T&\var(X_{n+1})&b_{n+1}^{(n+1)}\\{b_{n+1}^T}^{(1:n)}&b_{n+1}^{(n+1)}&a_{n+1}\closem\]
+where $e$ is defined as above. Then, consider the joint distribution of $X_1,\ldots,X_{n+1},Y_{n+1}$. Then, the conditional mean of $\openm X_{n+1}\\Y_{n+1}\closem$ given $X_1,\ldots,X_n$ can be expressed as
+\[\openm e^T\\{b_{n+1}^T}^{(1:n)}\closem V_n^{-1}\openm x_1\\\vdots\\x_n\closem\]
+so the prediction for $X_{n+1}$ would be $e^TV_n^{-1}x$ and for $Y_{n+1}$ would be ${b_{n+1}^T}^{(1:n)}V_n^{-1}x$.
+\end{document}
