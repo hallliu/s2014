@@ -1,0 +1,40 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\usepackage{mathrsfs}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+\ssn{1}
+First, suppose that $C$ is empty. Then, the graph is disconnected, and $A$ and $B$ lie in different connected components, which means that no maximal cliques contain both elements from $A$ and elements from $B$. We can then factor the pdf into one part containing only variables from $A$ and not $B$ and one part only variables from $B$ and not $A$, so $A$ and $B$ are independent. If $C$ is nonempty, let $\conj{A}$ be the set of elements reachable from $A$ without going through $C$ (this excludes $C$ itself). Note that $A\subset \conj{A}$ and $B\cap\conj{A}=\emptyset$ by the assumption that $C$ separates $A$ and $B$. Further, every maximal clique which contains elements of $\conj{A}$ must not contain elements of $\conj{A}^c$ which are not in $C$ (this would violate the separation criterion) and conversely any maximal clique which contains elements of $\conj{A}^c$ must not contain any elements of $\conj{A}$ unless all the elements of $\conj{A}^c$ in that clique are also in $C$. 
+
+Thus, we have that any maximal clique must be either a subset of $\conj{A}\cup C$ or a subset of $\conj{A}^c$, which means that the probability factors into two pieces containing variables from $\conj{A}\cup C$ and $\conj{A}^c$. We can further decompose $\conj{A}^c$ into $(\conj{A}^c-C)\cup C$, the former of which contains $B$. Thus, if we integrate over the complement of $C$ and divide to get the conditional, we get a factored distribution, one piece of which contains all elements of $A$ and no elements of $B$, and the other contains all elements of $B$ and no elements of $A$, which means that we have conditional independence.
+\end{document}
