@@ -33,8 +33,65 @@ Name: Hall Liu
 
 Date: \today 
 \vspace{1.5cm}
-\ssn{1}
+\subsection*{1}
 First, suppose that $C$ is empty. Then, the graph is disconnected, and $A$ and $B$ lie in different connected components, which means that no maximal cliques contain both elements from $A$ and elements from $B$. We can then factor the pdf into one part containing only variables from $A$ and not $B$ and one part only variables from $B$ and not $A$, so $A$ and $B$ are independent. If $C$ is nonempty, let $\conj{A}$ be the set of elements reachable from $A$ without going through $C$ (this excludes $C$ itself). Note that $A\subset \conj{A}$ and $B\cap\conj{A}=\emptyset$ by the assumption that $C$ separates $A$ and $B$. Further, every maximal clique which contains elements of $\conj{A}$ must not contain elements of $\conj{A}^c$ which are not in $C$ (this would violate the separation criterion) and conversely any maximal clique which contains elements of $\conj{A}^c$ must not contain any elements of $\conj{A}$ unless all the elements of $\conj{A}^c$ in that clique are also in $C$. 
 
 Thus, we have that any maximal clique must be either a subset of $\conj{A}\cup C$ or a subset of $\conj{A}^c$, which means that the probability factors into two pieces containing variables from $\conj{A}\cup C$ and $\conj{A}^c$. We can further decompose $\conj{A}^c$ into $(\conj{A}^c-C)\cup C$, the former of which contains $B$. Thus, if we integrate over the complement of $C$ and divide to get the conditional, we get a factored distribution, one piece of which contains all elements of $A$ and no elements of $B$, and the other contains all elements of $B$ and no elements of $A$, which means that we have conditional independence.
+\subsection*{2}
+\ssn{a}
+We have $p(x_0,x_1,x_2)=\frac{1}{Z}e^{\alpha x_0x_1}e^{\alpha x_1x_2}$. Summing over $x_0$ gives $\frac{1}{Z}e^{\alpha x_1x_2}\left(e^{\alpha x_1}+1\right)$. Summing over $x_2$ gives $\frac{1}{Z}\left(e^{\alpha x_1}+1\right)^2$, and summing this over $x_1$ gives $\frac{1}{Z}\left(\left(e^\alpha+1\right)^2+4\right)$, so $Z=\left(e^\alpha+1\right)^2+4$.
+
+Summing the joint over $x_2$ gives $\frac{1}{Z}e^{\alpha x_0x_1}\left(e^{\alpha x_1}+1\right)$, and summing this over $x_1$ gives $\frac{1}{Z}\left(2+e^{\alpha x_0}\left(e^{\alpha}+1\right)\right)$, which is the marginal of $x_0$.
+\ssn{b}
+As $\alpha\to0$, the joint distribution becomes uniform. As $\alpha\to\infty$, the joint distribution becomes a single peak at $(1,1,1)$.
+\ssn{c}
+We have $M^2=\openm2&e^\alpha+1\\e^\alpha+1&e^{2\alpha}+1\closem$. If we sum all the elements of $M^2$, we obtain $2+2e^\alpha+2+e^{2\alpha}+1=4+\left(e^{\alpha}+1\right)^2$.
+\ssn{d}
+Define two recursions $C_0=e^\alpha+1$, $C_i=2+\sum_{j=0}^{i-2}C_{j}+e^\alpha C_{i-1}$ and $D_i=2+\sum_{j=0}^{i-2}C_j+e^{\alpha x_{i+1}}C_{i-1}$. The claim is that for $n\geq3$ variables, the marginal distribution of $x_i,\ldots,x_{n-1}$ is $D_{i-1}\prod_{j=i}^{n-2}e^{\alpha x_jx_{j+1}}$. To prove this, induct on $i$. For $i=1$, the marginal distribution comes from summing out $x_0$, which produces $\prod_{j=1}^{n-2}e^{\alpha x_jx_{j+1}}(e^{\alpha x_1}+1)$. For the inductive step, assume the marginal distribution on $x_i,\ldots,x_{n-1}$. Then, summing over $x_i$ produces
+\begin{align*}
+    &\sum_{x_i}\left(\prod_{j=i+1}^{n-2}e^{\alpha x_jx_{j+1}}\right)e^{\alpha x_ix_{i+1}}\left(2+\sum_{j=0}^{i-3}C_j+e^{\alpha x_{i}}C_{i-2}\right)\\
+    &=\left(\prod_{j=i+1}^{n-2}e^{\alpha x_jx_{j+1}}\right)\left(\left(2+\sum_{j=0}^{i-3}C_j+C_{i-2}\right)+e^{\alpha x_{i+1}}\left(2+\sum_{j=0}^{i-3}C_j+e^{\alpha}C_{i-2}\right)\right)\\
+    &=\left(\prod_{j=i+1}^{n-2}e^{\alpha x_jx_{j+1}}\right)\left(2+\sum_{j=0}^{i-2}C_j+e^{\alpha x_{i+1}}C_{i-1}\right)\\
+    &=D_i\left(\prod_{j=i+1}^{n-2}e^{\alpha x_jx_{j+1}}\right)\\
+\end{align*}
+which ends the proof. Thus, we have that the marginal distribution on $x_{n-1}$ is $D_{n-2}$, so the normalizing constant can be obtained by summing the two values of $x_{n-1}$. Note that the marginal on $x_0$ has the same form as that of $x_{n-1}$ due to symmetry -- the notation is less cumbersome this way. To show the relation to $M$, we have that 
+\[M^3=\openm 2+C_0&C_1\\C_1&C_0+e^\alpha C_1-C_1+2\closem\]
+and in general
+\[M^i=\openm 2+\sum_{j=0}^{i-3}C_j&C_{i-2}\\C_{i-2}&2+\sum_{j=0}^{i-3}C_j-C_{i-2}+e^\alpha C_{i-2}\closem\]
+This identity is straightforward to show by induction but cumbersome in notation, so I'm omitting it. Now, given this, we have that the sum of the entries of $M^i$ amounts to
+\[2\left(2+\sum_{j=0}^{i-3}C_j\right)+e^\alpha C_{i-2}+C_{i-2}\]
+which is the sum of $D_{i-1}$ over the two values of $x_i$. Thus, the normalizing constant is the sum of the entries of $M^{n-1}$, which we can see by setting $i=n-1$.
+\ssn{e}
+The formula follows from the application of the definition of conditional probability, starting from the right side and collapsing leftwards. Using the conditional independence property, we have that $x_{i}\perp x_{i-2},\ldots,x_1|x_{i-1}$ for all $2\leq i\leq n-1$, so $p(x_{i}|x_{i-1},\ldots,x_0)=p(x_{i}|x_{i-1})$ for each term in the product. Since each variable depends only on the one preceding it, we have that the joint distribution is a Markov chain.
+
+The transitions are not uniform -- take the $n=3$ case. We have $p(x_1|x_0)=\frac{e^{\alpha x_0x_1}(e^{\alpha x_1}+1)}{2+e^{\alpha x_0}(e^\alpha+1)}$ and $p(x_2|x_1)=\frac{e^{\alpha x_1x_2}}{e^{\alpha x_1}+1}$. If we plug in $(1,1)$ to both of these, we get something different.
+\ssn{f}
+Integrating, we have 
+\[\int_\rn\int_\rn\int_\rn e^{\alpha x_0x_1}e^{\alpha x_1x_2}\,dx_0dx_2dx_1\]
+This integral diverges, so we cannot find a normalizing constant. If we add the individual clique functions, the joint distribution becomes
+\[\frac{1}{Z}\exp\left(-\beta x_0^2+\alpha x_0x_1-\beta x_1^2+\alpha x_1x_2-\beta x_2^2\right)\]
+This has the form of a multivariate normal distribution with mean $0$ and precision matrix 
+\[P=\openm-2\beta&\alpha&0\\\alpha&-2\beta&\alpha\\0&\alpha&-2\beta\closem\]
+which means that the normalizing constant is $\frac{1}{Z}=\frac{\sqrt{|P|}}{(2\pi)^{3/2}}$. The constraint on the value of $\beta$ is so that $P$ is a positive-definite matrix.
+\subsection*{3}
+\ssn{a}
+\vspace{200pt}
+\ssn{b}
+There are no cycles, so the largest cliques are the edges. The general form of the distribution is 
+\[\frac{1}{Z}\exp\left(\psi_{12}+\psi_{23}+\psi_{34}+\psi_{35}+\psi_{56}\right)\]
+where each $\psi_{ij}$ takes $x_i$ and $x_j$ as arguments.
+\ssn{c}
+The state space has $K^6$ elements, so that's the number of operations needed (up to a constant factor involved in evaluating the $\psi$s.
+\ssn{d}
+Sum the joint distribution (without normalization) over $x_1$, $x_6$, and $x_4$ to obtain
+\[\exp(\psi_{23}+\psi_{35})\left(\sum_{x_1}\exp(\psi_{12})\right)\left(\sum_{x_4}\exp(\psi_{34})\right)\left(\sum_{x_6}\exp(\psi_{56})\right)\]
+Define $\alpha_2(x_2)=\log\left(\sum_{x_1}\exp(\psi_{12}(x_1,x_2))\right)$, and note that we can compute all the possible values of $\alpha_2$ in $K^2$ operations and save them for later use ($K$ space usage). Similarly define $\alpha_3(x_3)$ and $\alpha_5(x_5)$.
+
+Then, we can rewrite the above expression as
+\[\exp(\alpha_2+\psi_{23}+\alpha_3+\psi_{35}+\alpha_5)\]
+Summing over $x_5$, we obtain
+\[\exp(\alpha_2+\psi_{23}+\alpha_3)\sum_{x_5}\exp(\psi_{35}(x_3,x_5)+\alpha_5(x_5))\]
+Define $\beta_3(x_3)$ to be the log of the sum above, so we can rewrite as $\exp(\alpha_2+\psi_{23}+\alpha_3+\beta_3)$. Again, the values of $\beta_3$ on all possible values of $x_3$ take $K^2$ operations to compute (so we're up to $4K^2$ now).
+
+Finally, define $\gamma_3(x_3)$ by summing over $x_2$ and repeating the above process (an additional $K^2$ operations), so that we're left with $\exp(\alpha_3+\beta_3+\gamma_3)$, which we can sum over $x_3$ to obtain the normalizing constant, for a total of $6K^2$ operations. 
 \end{document}
