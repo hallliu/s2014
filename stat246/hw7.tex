@@ -1,0 +1,50 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage[namelimits,sumlimits]{amsmath}
+\usepackage{amssymb,amsfonts}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage[cm]{fullpage}
+\usepackage{mathrsfs}
+\newcommand{\tab}{\hspace*{5em}}
+\newcommand{\conj}{\overline}
+\newcommand{\dd}{\partial}
+\newcommand{\ep}{\epsilon}
+\newcommand{\openm}{\begin{pmatrix}}
+\newcommand{\closem}{\end{pmatrix}}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+\DeclareMathOperator{\Null}{null}
+\newcommand{\nc}{\newcommand}
+\newcommand{\rn}{\mathbb{R}}
+\nc{\cn}{\mathbb{C}}
+\nc{\ssn}[1]{\subsubsection*{#1}}
+\nc{\inner}[2]{\langle #1,#2\rangle}
+\nc{\h}[1]{\widehat{#1}}
+\nc{\tl}[1]{\widetilde{#1}}
+\nc{\norm}[1]{\left\|{#1}\right\|}
+\begin{document}
+
+Name: Hall Liu
+
+Date: \today 
+\vspace{1.5cm}
+
+\subsection*{1}
+\ssn{a}
+Suppose $j$ is a neighbor of $i$. Then, there exists some clique that contains both $i$ and $j$, so $j$ is in the union of the cliques containing $i$. Conversely, suppose $j$ is in the union of cliques containing $i$. Then, $i$ and $j$ coexist in a clique together, so they have an edge between them, which means that $j$ is a neighbor of $i$.
+\ssn{b}
+Denote the set of cliques which contain $X_i$ by $C(i)$ and its complement in the set of cliques by $C(-i)$. Then, we have that $P(X_i|X_{N_i})=P(X_i|X_{-i})$ (where $X_{-i}$ is all nodes except $X_i$), which can be written as 
+\[\frac{\exp\left(\beta\sum_l\psi_{C_l}(X_{C_l})\right)}{\exp\left(\beta\sum_{C\in C(-i)}\psi_C(X_C)\right)\sum_{X_i}\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)}=\frac{\exp\left(\beta\sum_{C\in C(i)}\psi_{C}(X_{C})\right)}{\sum_{X_i}\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)}\]
+Using this, then, we can write the log-pseudolikelihood as
+\[\sum_{n=1}^N\sum_{i=1}^d\left(\beta\sum_{C\in C(i)}\psi_{C}(X_{C})-\log\left(\sum_{X_i}\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)\right)\right)\]
+where the summation over $n$ operates via an implicit superscript $(n)$ over each datum $X$. Differentiating wrt $\beta$ and setting to $0$ gives 
+\[0=\sum_{n=1}^N\sum_{i=1}^d\left(\sum_{C\in C(i)}\psi_{C}(X_{C})-\frac{\sum_{X_i}\left(\sum_{C\in C(i)}\psi_C(X_C)\right)\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)}{\sum_{X_i}\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)}\right)\]
+It doesn't look like this can be simplified any further without knowing the forms of the cliques.
+\ssn{c}
+
+\end{document}
