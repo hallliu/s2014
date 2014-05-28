@@ -46,5 +46,24 @@ where the summation over $n$ operates via an implicit superscript $(n)$ over eac
 \[0=\sum_{n=1}^N\sum_{i=1}^d\left(\sum_{C\in C(i)}\psi_{C}(X_{C})-\frac{\sum_{X_i}\left(\sum_{C\in C(i)}\psi_C(X_C)\right)\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)}{\sum_{X_i}\exp\left(\beta\sum_{C\in C(i)}\psi_C(X_C)\right)}\right)\]
 It doesn't look like this can be simplified any further without knowing the forms of the cliques.
 \ssn{c}
+Let $f(X_i,X_{N_i})=\sum_{C\in C(i)}\psi_C(X_C)$. Then, we can rewrite the equation from (b) as
+\[\sum_{n=1}^N\sum_{i=1}^df(X_i, X_{N_i})=\sum_{n=1}^N\sum_{i=1}^d\frac{\sum_{x_i}\left(f(x_i,X_{N_i})\exp\left(\beta f(x_i,X_{N_i})\right)\right)}{\sum_{x_i}\exp\left(\beta f(x_i,X_{N_i})\right)}\]
+First, examine the LHS. If we look at the sum as being over the different possible configurations of $X_i$ and $X_{N_i}$ rather than being over the data points, we can rewrite it as
+\[\sum_{i=1}^d\sum_{x_{N_i}}\sum_{x_i}f(x_i, x_{N_i})\left|\{n:X_i^{(n)}=x_i,X_{N_i}^{(n)}=x_{N_i}\}\right|\]
+where the multiplier is the number of data points which have the configuration specified by $x_i$ and $x_{N_i}$. We can then express this in terms of the empirical expectation as 
+\[\sum_{i=1}^d\sum_{x_{N_i}}\left|\{n:X_{N_i}=x_{N_i}\}\right| E^{(emp)}(f(X_i,X_{N_i})|X_{N_i}=x_{N_i})\]
+
+To pare down the right side, first note that the (non-empirical) expectation is given by
+\[E(f(X_i,X_{N_i})|X_{N_i}=x_{N_i})=\sum_{x_i}f(x_i,x_{N_i})P(x_i|x_{N_i})=\sum_{x_i}f(x_i, x_{N_i})\frac{\exp\left(\beta f(x_i,x_{N_i})\right)}{\sum_{x_i'}\exp\left(\beta f(x_i',x_{N_i})\right)}\]
+Conveniently, this is the same as the inner summand of the RHS, so we can write the RHS as
+\[\sum_{i=1}^d\sum_{n=1}^NE(f(X_i^{(n)},X_{N_i}^{(n)})|X_{N_i})=\sum_{i=1}^d\sum_{x_{N_i}}E(f(X_i,X_{N_i})|X_{N_i}=x_{N_i})\left|\{n:X_{N_i}=x_{N_i}\}\right|\]
+Then, trimming away the leftover counts (which are attached to the same terms on both sides) gives us the desired equality.
+\ssn{d}
+In the same vein as (b), the log-pseudolikelihood is
+\[\sum_{n=1}^N\sum_{i=1}^d\left(\sum_{C\in C(i)}\beta_C\psi_{C}(X_{C})-\log\left(\sum_{X_i}\exp\left(\sum_{C\in C(i)}\beta_C\psi_C(X_C)\right)\right)\right)\]
+Fix a clique $C$ and differentiate wrt $\beta_C$ to obtain
+\[\sum_{n=1}^N\sum_{i\in C}\left(\psi_C(X_C)-\frac{\sum_{x_i}\psi_C(X_C)\exp\left(\sum_{C'\in C(i)}\beta_{C'}\psi_{C'}(X_{C'})\right)}{\sum_{x_i}\exp\left(\sum_{C'\in C(i)}\beta_{C'}\psi_{C'}(X_{C'})\right)}\right)=0\]
+Then, going through the same steps as in (c), we see that the result is the same, but with $f(x_i,X_{N_i})=\psi_C(X_C)$ for every clique $C$ that contains $i$.
+\subsection*{2}
 
 \end{document}
