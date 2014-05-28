@@ -65,5 +65,9 @@ Fix a clique $C$ and differentiate wrt $\beta_C$ to obtain
 \[\sum_{n=1}^N\sum_{i\in C}\left(\psi_C(X_C)-\frac{\sum_{x_i}\psi_C(X_C)\exp\left(\sum_{C'\in C(i)}\beta_{C'}\psi_{C'}(X_{C'})\right)}{\sum_{x_i}\exp\left(\sum_{C'\in C(i)}\beta_{C'}\psi_{C'}(X_{C'})\right)}\right)=0\]
 Then, going through the same steps as in (c), we see that the result is the same, but with $f(x_i,X_{N_i})=\psi_C(X_C)$ for every clique $C$ that contains $i$.
 \subsection*{2}
-
+Performing the multiplication $P_nP=P_{n+1}$ to get a recurrence, we have
+\[\openm1-a_n&a_n\\b_n&1-b_n\closem\openm1-a&a\\b&1-b\closem=\openm1-(a+a_n(1-a-b))&a+a_n(1-a-b)\\b+b_n(1-a-b)&1-(b+b_n(1-a-b))\closem\]
+so the recurrence is $a_{n+1}=a+a_n(1-a-b)$ and similar for $b_{n+1}$. To find the steady-state solution, set $a_n=a_{n+1}=a^*$ to obtain $a^*=a+a^*(1-a-b)$ or $a^*=\frac{a}{a+b}$ (and similarly $b^*=\frac{b}{a+b}$). This gives us the limit of $P^n$ as 
+\[\openm\frac{b}{a+b}&\frac{a}{a+b}\\\frac{b}{a+b}&\frac{a}{a+b}\closem\]
+To find closed-form formulas for $a_n$ and $b_n$, note that $a_{n+1}-a^*=(a_n-a^*)(1-a-b)$, or $a_n-a^*=(1-a-b)^{n-1}(a-a^*)$. The same goes for $b_n$.
 \end{document}
