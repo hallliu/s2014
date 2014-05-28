@@ -74,7 +74,11 @@ To find closed-form formulas for $a_n$ and $b_n$, note that $a_{n+1}-a^*=(a_n-a^
 \ssn{a}
 \vspace{130pt}
 \ssn{b}
-$Q$ is a bidiagonal matrix with $\beta$ on the diagonal and $-2\alpha$ on the superdiagonal.
+To construct $Q$ (for $n\geq3$), start with a tridiagonal matrix with $\beta$ on the diagonal and $-\alpha$ on the off-diagonals, then place $-\alpha$ at the upper-right and lower-left corners. Then, taking $x^TQx$ results in 
+\[\sum_{i=1}^nx_i(-\alpha x_{i-1}+\beta x_i-\alpha x_{i+1})\]
+which simplifies to $\sum_{i=1}^n-2\alpha x_ix_{i+1}+\beta x_i^2$ when we combine the like terms across summands. Multiplying by $-\frac{1}{2}$ gives us the term in the exponent.
 \ssn{c}
-
+The $l$th entry of $Qv_k$ is $\frac{\beta}{\sqrt{n}}\exp(2\pi i\frac{l}{n}k)-\frac{\alpha}{\sqrt{n}}\left(\exp(2\pi i\frac{l-1}{n}k)+\exp(2\pi i\frac{l+1}{n}k)\right)$. This is a real multiple of $\exp(2\pi i\frac{l}{n}k)$ since adding the two $\alpha$-multiplied vectors results in something with the same argument. For $k$ fixed, the multiplier is the same for every $l$, and its value is $\frac{\beta-2\alpha\cos(2\pi k/n)}{\sqrt{n}}$. Thus, the $v_k$ are eigenvectors. Further, since we know that $\beta>2\alpha$, all the eigenvalues are positive, which implies that $Q$ is strictly positive definite.
+\ssn{d}
+Since this density is invariant under cyclically permuting the variables, all that's needed is to find the distribution of $x_1$ conditioned on all the others. Write the covariance $Q$ as $\openm \beta&Q_{12}\\Q_{21}&Q_{22}\closem$. Then, if the other variables taken together equal some $n-1$-long vector $y$, the conditional mean of $x_1$ is $Q_{12}Q_{22}^{-1}y$ and the conditional variance is $\beta-Q_{12}Q_{22}^{-1}Q_{21}$. For all the variables, $Q_{22}$ will be a $n-1\times n-1$ tridiagonal matrix having $\beta$ on the diagonal and $-\alpha$ on the off-diagonal.
 \end{document}
