@@ -311,6 +311,8 @@ class Broker:
     if not hasattr(self, "devnull"):
       self.devnull = open(os.devnull, "w")
 
+
+
     proc = subprocess.Popen(args, shell=True, stdout=self.devnull, stderr=self.devnull)
     self.node_pids[command['name']] = proc
 
