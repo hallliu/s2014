@@ -7,6 +7,7 @@ import datetime
 import zmq
 from zmq.eventloop import ioloop, zmqstream
 import argparse
+from copy import copy
 ioloop.install()
 
 class Node(object):
@@ -31,12 +32,26 @@ class Node(object):
         self.name = name
         self.peers = peer_names
         self.hello_sent = False
-
+        
+        self.message_handlers = {
+                'hello': self.helloRespond,
+                'RequestVote': self.handle_reqvote
+        }
 
         # Node's Raft state (possibly to be augmented by DHT later?)
-        self.raft_peers = self.peers.copy()
+        self.raft_peers = copy(self.peers)
         self.raft_state = 'follower'
+
         self.raft_term = 0
+        self.raft_lastvote = None
+        self.raft_commitIndex = 0
+        self.raft_lastApplied = 0
+
+        self.raft_lastLogIndex = 0
+        self.raft_lastLogTerm = 0
+
+        self.raft_nextIndex = None
+        self.raft_matchIndex = None
 
         self.stored_data = {}
 
@@ -50,12 +65,34 @@ class Node(object):
 
     def msg_handler(self, frames):
         msg = json.loads(frames[2])
-        if msg['type'] == 'hello' and not self.hello_sent:
+        handler_fn = self.message_handlers.get(msg['type'], self.log_info)
+        handler_fn(msg)
+
+    '''
+    Here follows the different functions that get triggered
+    '''
+    def helloRespond(self, msg):
+        if not self.hello_sent:
             self.req.send_json({'type': 'helloResponse', 'source': self.name})
             self.hello_sent = True
             self.req.send_json({'type': 'log', 'message': 'hello received'})
-        if msg['type'] == 'RequestVote':
-            pass
+
+    def leader_timeout(self):
+        self.log_info('Server {0} hit election timeout'.format(self.name))
+        self.raft_state = 'cand'
+        self.raft_term += 1
+        reqvote_msg = {
+                'type': 'RequestVote',
+                'term': self.raft_term,
+                'lastLogIndex': self.raft_lastLogIndex,
+                'raft_lastLogTerm': self.raft_lastLogTerm
+        }
+        self.req.send_json(reqvote_msg)
+
+    def handle_reqvote(self, msg):
+
+    def log_info(self, s):
+        self.req.send_json({'type': 'log', 'info': s})
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
