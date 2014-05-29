@@ -186,7 +186,7 @@ class Broker:
     '''
     Print or log to a file the given message, along with sender.
     '''
-    # self.log_message(message)
+    self.log_message(message)
     return Message({'type': 'okay'})
 
   def make_handle_response(self, ty):
@@ -310,8 +310,6 @@ class Broker:
 
     if not hasattr(self, "devnull"):
       self.devnull = open(os.devnull, "w")
-
-
 
     proc = subprocess.Popen(args, shell=True, stdout=self.devnull, stderr=self.devnull)
     self.node_pids[command['name']] = proc
