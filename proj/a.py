@@ -3,7 +3,7 @@ import random
 import json
 import sys
 import signal
-import time
+import datetime
 import zmq
 from zmq.eventloop import ioloop, zmqstream
 import argparse
@@ -30,22 +30,33 @@ class Node(object):
 
         self.name = name
         self.peers = peer_names
+        self.hello_sent = False
+
+
+        # Node's Raft state (possibly to be augmented by DHT later?)
+        self.raft_peers = self.peers.copy()
+        self.raft_state = 'follower'
+        self.raft_term = 0
+
         self.stored_data = {}
 
     def start(self):
         self.loop.start()
+        # Initialize the election timeout
+        self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
 
     def handle_broker_message(self, frames):
         pass
 
     def msg_handler(self, frames):
         msg = json.loads(frames[2])
-        if msg['type'] == 'hello':
+        if msg['type'] == 'hello' and not self.hello_sent:
             self.req.send_json({'type': 'helloResponse', 'source': self.name})
+            self.hello_sent = True
             self.req.send_json({'type': 'log', 'message': 'hello received'})
-        else:
-            self.req.send_json({'type': 'log', 'data': msg})
-        
+        if msg['type'] == 'RequestVote':
+            pass
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--pub-endpoint',
