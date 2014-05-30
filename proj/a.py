@@ -118,8 +118,7 @@ class Node(object):
             self.log_info('Rejected vote req from {0} due to lagging term (self: {1}, peer: {2})'.format(msg['source'], self.raft_term, msg['term']))
             return
 
-        # Decide whether to grant the vote and also cancel the timeout
-        self.loop.remove_timeout(self.raft_timeout)
+        # Decide whether to grant the vote
         hasNotVoted = self.raft_lastvote is None
         cand_uptodate = self.raft_log[-1]['term'] <= msg['lastLogTerm'] and len(self.raft_log) <= msg['raft_lastLogIndex']
         if hasNotVoted and cand_uptodate:
@@ -175,7 +174,21 @@ class Node(object):
         self.raft_nextIndex = defaultdict(lambda: len(self.raft_log) + 1)
         self.raft_matchIndex = defaultdict(int)
 
-
+        # Send out a heartbeat AppendEntries to all peers
+        leader_heartbeat = {
+                'type': 'AppendEntries',
+                'destination': self.raft_peers,
+                'source': self.name,
+                'term': self.raft_term,
+                'lastLogIndex': len(self.raft_log),
+                'lastLogTerm': self.raft_log[-1]['term'],
+                'entries': [],
+                'leaderCommit': self.raft_commitIndex
+        }
+        self.req.send_json(leader_heartbeat)
+        # Remove the timeout. Leaders don't need timeouts, because they're cool.
+        if self.raft_timeout is not None:
+            self.loop.remove_timeout(self.raft_timeout)
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
