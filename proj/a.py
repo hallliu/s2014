@@ -35,7 +35,8 @@ class Node(object):
         
         self.message_handlers = {
                 'hello': self.helloRespond,
-                'RequestVote': self.handle_reqvote
+                'RequestVote': self.handle_reqvote,
+                'VoteReply': self.handle_votereply
         }
 
         # Node's Raft state (possibly to be augmented by DHT later?)
@@ -49,6 +50,7 @@ class Node(object):
 
         self.raft_lastLogIndex = 0
         self.raft_lastLogTerm = 0
+        self.raft_timeout = None
 
         self.raft_nextIndex = None
         self.raft_matchIndex = None
@@ -58,7 +60,7 @@ class Node(object):
     def start(self):
         self.loop.start()
         # Initialize the election timeout
-        self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
+        self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
 
     def handle_broker_message(self, frames):
         pass
@@ -79,17 +81,85 @@ class Node(object):
 
     def leader_timeout(self):
         self.log_info('Server {0} hit election timeout'.format(self.name))
-        self.raft_state = 'cand'
+        self.raft_state = 'candidate'
         self.raft_term += 1
         reqvote_msg = {
                 'type': 'RequestVote',
+                'source': self.name,
                 'term': self.raft_term,
                 'lastLogIndex': self.raft_lastLogIndex,
-                'raft_lastLogTerm': self.raft_lastLogTerm
+                'lastLogTerm': self.raft_lastLogTerm
         }
         self.req.send_json(reqvote_msg)
+        self.raft_lastvote = self.name
+        self.raft_numVotes = 1 # Ourselves
 
     def handle_reqvote(self, msg):
+        # Check if term is larger and change own status as appropriate
+        if msg['term'] > self.raft_term:
+            self.revert_state(msg['term'])
+
+        # If term is less, simply reject
+        elif msg['term'] < self.raft_term:
+            reject_msg = {
+                    'type': 'VoteReply',
+                    'destination': msg['source'],
+                    'term': self.raft_term,
+                    'voteGranted': False
+            }
+            self.req.send_json(reject_msg)
+            self.log_info('Rejected vote req from {0} due to lagging term (self: {1}, peer: {2})'.format(msg['source'], self.raft_term, msg['term']))
+            return
+
+        # Decide whether to grant the vote and also cancel the timeout
+        self.loop.remove_timeout(self.raft_timeout)
+        hasNotVoted = self.raft_lastvote is None
+        cand_uptodate = self.raft_lastLogTerm <= msg['lastLogTerm'] and self.raft_lastLogIndex <= msg['raft_lastLogIndex']
+        if hasNotVoted and cand_uptodate:
+            vote_msg = {
+                    'type': 'VoteReply',
+                    'destination': msg['source']
+                    'term': self.raft_term,
+                    'voteGranted': True
+            }
+            self.req.send_json(vote_msg)
+            self.raft_lastvote = msg['source']
+            self.log_info('Granted vote to {0} at term {1}'.format(msg['source'], msg['term']))
+        else:
+            reject_msg = {
+                    'type': 'VoteReply',
+                    'destination': msg['source'],
+                    'term': self.raft_term,
+                    'voteGranted': False
+            }
+            self.req.send_json(vote_msg)
+            log_msg = 'Rejected vote req from {0} due to hasNotVoted={1} and uptodate={2}'.format(msg['source'], hasNotVoted, cand_uptodate)
+            self.log_info(log_msg)
+        
+    def handle_votereply(self, msg):
+        # If term leads ours, fall back to follower and exit
+        if msg['term'] > self.raft_term:
+            self.revert_state(msg['term'])
+            return
+        # If term is lagging or no longer a candidate, just ignore the message.
+        if msg['term'] < self.raft_term or not self.raft_state == 'candidate':
+            return
+
+        # If vote granted, increment our vote count by one, then become leader if majority
+        if msg['voteGranted']:
+            self.raft_numVotes += 1
+            if self.raft_numVotes >= len(self.raft_peers) + 1:
+                self.become_leader()
+
+
+    '''
+    A bunch of helper functions that take care of common raft state transitions
+    '''
+    # Resets self back to follower state upon receiving a message with a higher term
+    def revert_state(self, term):
+        self.raft_state = 'follower'
+        self.raft_term = term
+        self.raft_lastvote = None
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
