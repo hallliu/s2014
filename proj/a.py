@@ -78,7 +78,7 @@ class Node(object):
         handler_fn(msg)
 
     '''
-    Here follows the different functions that get triggered
+    Here follows the message handler functions that interface directly with the broker.
     '''
     def helloRespond(self, msg):
         if not self.hello_sent:
@@ -86,6 +86,7 @@ class Node(object):
             self.hello_sent = True
             self.req.send_json({'type': 'log', 'message': 'hello received'})
 
+    # Not strictly a handler, but it responds directly to loop events, so I'm putting it here.
     def leader_timeout(self):
         self.log_info('Server {0} hit election timeout'.format(self.name))
         self.raft_state = 'candidate'
@@ -100,12 +101,9 @@ class Node(object):
         self.req.send_json(reqvote_msg)
         self.raft_lastvote = self.name
         self.raft_numVotes = 1 # Ourselves
+        self.reset_timeout()
 
     def handle_reqvote(self, msg):
-        # Check if term is larger and change own status as appropriate
-        if msg['term'] > self.raft_term:
-            self.revert_state(msg['term'])
-
         # If term is less, simply reject
         elif msg['term'] < self.raft_term:
             reject_msg = {
@@ -117,6 +115,14 @@ class Node(object):
             self.req.send_json(reject_msg)
             self.log_info('Rejected vote req from {0} due to lagging term (self: {1}, peer: {2})'.format(msg['source'], self.raft_term, msg['term']))
             return
+
+        # If this message came from a candidate at least as up-to-date as us, no sense in
+        # going for candidacy again soon. Thus, reset the timeout.
+        self.reset_timeout()
+
+        # Check if term is larger and change own status as appropriate
+        if msg['term'] > self.raft_term:
+            self.revert_state(msg['term'])
 
         # Decide whether to grant the vote
         hasNotVoted = self.raft_lastvote is None
@@ -167,8 +173,12 @@ class Node(object):
         self.raft_term = term
         self.raft_lastvote = None
     
-    # Upon receiving a sufficient number of votes, becomes leader
+    # Upon receiving a sufficient number of votes, become leader using this function
     def become_leader(self):
+        # Remove the timeout. Leaders don't need timeouts, because they're cool.
+        if self.raft_timeout is not None:
+            self.loop.remove_timeout(self.raft_timeout)
+
         # Adjust own state.
         self.raft_state = 'leader'
         self.raft_nextIndex = defaultdict(lambda: len(self.raft_log) + 1)
@@ -186,9 +196,12 @@ class Node(object):
                 'leaderCommit': self.raft_commitIndex
         }
         self.req.send_json(leader_heartbeat)
-        # Remove the timeout. Leaders don't need timeouts, because they're cool.
+    
+    # Reset the timeout to another 150-300ms interval from now.
+    def reset_timeout(self):
         if self.raft_timeout is not None:
             self.loop.remove_timeout(self.raft_timeout)
+        self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
