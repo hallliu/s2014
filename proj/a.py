@@ -37,7 +37,8 @@ class Node(object):
         self.message_handlers = {
                 'hello': self.helloRespond,
                 'RequestVote': self.handle_reqvote,
-                'VoteReply': self.handle_votereply
+                'VoteReply': self.handle_votereply,
+                'AppendEntry': self.handle_appendentry
         }
 
         # Node's Raft state (possibly to be augmented by DHT later?)
@@ -95,7 +96,7 @@ class Node(object):
                 'type': 'RequestVote',
                 'source': self.name,
                 'term': self.raft_term,
-                'lastLogIndex': len(self.raft_log),
+                'lastLogIndex': len(self.raft_log) - 1,
                 'lastLogTerm': self.raft_log[-1]['term']
         }
         self.req.send_json(reqvote_msg)
@@ -108,7 +109,7 @@ class Node(object):
         elif msg['term'] < self.raft_term:
             reject_msg = {
                     'type': 'VoteReply',
-                    'destination': msg['source'],
+                    'destination': [msg['source']],
                     'term': self.raft_term,
                     'voteGranted': False
             }
@@ -126,11 +127,11 @@ class Node(object):
 
         # Decide whether to grant the vote
         hasNotVoted = self.raft_lastvote is None
-        cand_uptodate = self.raft_log[-1]['term'] <= msg['lastLogTerm'] and len(self.raft_log) <= msg['raft_lastLogIndex']
+        cand_uptodate = self.raft_log[-1]['term'] <= msg['lastLogTerm'] and len(self.raft_log) - 1 <= msg['raft_lastLogIndex']
         if hasNotVoted and cand_uptodate:
             vote_msg = {
                     'type': 'VoteReply',
-                    'destination': msg['source']
+                    'destination': [msg['source']],
                     'term': self.raft_term,
                     'voteGranted': True
             }
@@ -140,7 +141,7 @@ class Node(object):
         else:
             reject_msg = {
                     'type': 'VoteReply',
-                    'destination': msg['source'],
+                    'destination': [msg['source']],
                     'term': self.raft_term,
                     'voteGranted': False
             }
@@ -160,8 +161,60 @@ class Node(object):
         # If vote granted, increment our vote count by one, then become leader if majority
         if msg['voteGranted']:
             self.raft_numVotes += 1
+            self.log_info('Vote received, {0} total'.format(self.raft_numVotes))
             if self.raft_numVotes >= len(self.raft_peers) + 1:
                 self.become_leader()
+
+    def handle_appendentry(self, msg):
+        # Check terms before doing anything else. Note that if the terms are equal and self is
+        # in follower mode, revert_state does absolutely nothing.
+        if self.raft_term <= msg['term']:
+            revert_state(self, msg['term'])
+
+        reject_msg = {
+                'term': self.raft_term,
+                'destination': [msg['source']],
+                'success': False
+        }
+
+        if self.raft_term > msg['term']:
+            self.req.send_json(reject_msg)
+            return
+
+        # Check log for the lastLogIndex and see if it matches up with the one from the message
+        # First case is for is when self's log is too short
+        if len(self.raft_log) <= msg['lastLogIndex']:
+            self.log_info('Self\'s log too short, failing')
+            self.req.send_json(reject_msg)
+            return
+        
+        # Next case is if the existing preventry doesn't match up
+        supposed_lastLogIndex = msg['lastLogIndex']
+        prev_entry_term = self.raft_log[supposed_lastLogIndex]['term']
+        if prev_entry_term != msg['lastLogTerm']:
+            self.log_info('Term mismatch at index {0}'.format(supposed_lastLogIndex))
+            self.raft_log = self.raft_log[:supposed_lastLogIndex]
+            self.req.send_json(reject_msg)
+            return
+
+        # Now, walk through the entries and check if everything matches up until the
+        # end of our log. When there's a mismatch, delete everything at and after the
+        # mismatch, and stick the rest of the entries from the message onto the
+        # end of the remnants.
+        rcvd_entries = msg['entries']
+        for logIndex in range(supposed_lastLogIndex + 1, len(self.raft_log)):
+            newEntry_index = logIndex - supposed_lastLogIndex + 1
+            if newEntry_index >= len(rcvd_entries):
+                break
+            if self.raft_log[logIndex]['term'] != rcvd_entries[newEntry_index]['term']:
+                self.raft_log = self.raft_log[:logIndex]
+                break
+            rcvd_entries.pop(0) # inefficient, but these usually aren't that big...
+
+        self.raft_log.extend(rcvd_entries)
+        self.log_info('Successfully appended {0} entries to own log'.format(len(rcvd_entries)))
+        
+
 
 
     '''
@@ -190,18 +243,21 @@ class Node(object):
                 'destination': self.raft_peers,
                 'source': self.name,
                 'term': self.raft_term,
-                'lastLogIndex': len(self.raft_log),
+                'lastLogIndex': len(self.raft_log) - 1,
                 'lastLogTerm': self.raft_log[-1]['term'],
                 'entries': [],
                 'leaderCommit': self.raft_commitIndex
         }
         self.req.send_json(leader_heartbeat)
+        self.log_info('Election won, becoming leader')
     
     # Reset the timeout to another 150-300ms interval from now.
     def reset_timeout(self):
         if self.raft_timeout is not None:
             self.loop.remove_timeout(self.raft_timeout)
+
         self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
+
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
