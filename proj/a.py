@@ -8,6 +8,7 @@ import zmq
 from zmq.eventloop import ioloop, zmqstream
 import argparse
 from copy import copy
+from collections import defaultdict
 ioloop.install()
 
 class Node(object):
@@ -43,19 +44,25 @@ class Node(object):
         self.raft_peers = copy(self.peers)
         self.raft_state = 'follower'
 
+        '''
+        The format of each log entry is a dict. The 'term' value is constant among all of them, and
+        all the other entries are to be used by any derived subclasses to adjust their own state.
+        '''
+        self.raft_log = []
+
         self.raft_term = 0
         self.raft_lastvote = None
         self.raft_commitIndex = 0
         self.raft_lastApplied = 0
 
-        self.raft_lastLogIndex = 0
-        self.raft_lastLogTerm = 0
         self.raft_timeout = None
 
+        '''
+        These two variables are only relevant when self is a leader. In that case,
+        they are initialized to defaultdicts which use each server's name as a key.
+        '''
         self.raft_nextIndex = None
         self.raft_matchIndex = None
-
-        self.stored_data = {}
 
     def start(self):
         self.loop.start()
@@ -87,8 +94,8 @@ class Node(object):
                 'type': 'RequestVote',
                 'source': self.name,
                 'term': self.raft_term,
-                'lastLogIndex': self.raft_lastLogIndex,
-                'lastLogTerm': self.raft_lastLogTerm
+                'lastLogIndex': len(self.raft_log),
+                'lastLogTerm': self.raft_log[-1]['term']
         }
         self.req.send_json(reqvote_msg)
         self.raft_lastvote = self.name
@@ -114,7 +121,7 @@ class Node(object):
         # Decide whether to grant the vote and also cancel the timeout
         self.loop.remove_timeout(self.raft_timeout)
         hasNotVoted = self.raft_lastvote is None
-        cand_uptodate = self.raft_lastLogTerm <= msg['lastLogTerm'] and self.raft_lastLogIndex <= msg['raft_lastLogIndex']
+        cand_uptodate = self.raft_log[-1]['term'] <= msg['lastLogTerm'] and len(self.raft_log) <= msg['raft_lastLogIndex']
         if hasNotVoted and cand_uptodate:
             vote_msg = {
                     'type': 'VoteReply',
@@ -160,6 +167,15 @@ class Node(object):
         self.raft_state = 'follower'
         self.raft_term = term
         self.raft_lastvote = None
+    
+    # Upon receiving a sufficient number of votes, becomes leader
+    def become_leader(self):
+        # Adjust own state.
+        self.raft_state = 'leader'
+        self.raft_nextIndex = defaultdict(lambda: len(self.raft_log) + 1)
+        self.raft_matchIndex = defaultdict(int)
+
+
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
