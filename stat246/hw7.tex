@@ -80,5 +80,58 @@ which simplifies to $\sum_{i=1}^n-2\alpha x_ix_{i+1}+\beta x_i^2$ when we combin
 \ssn{c}
 The $l$th entry of $Qv_k$ is $\frac{\beta}{\sqrt{n}}\exp(2\pi i\frac{l}{n}k)-\frac{\alpha}{\sqrt{n}}\left(\exp(2\pi i\frac{l-1}{n}k)+\exp(2\pi i\frac{l+1}{n}k)\right)$. This is a real multiple of $\exp(2\pi i\frac{l}{n}k)$ since adding the two $\alpha$-multiplied vectors results in something with the same argument. For $k$ fixed, the multiplier is the same for every $l$, and its value is $\frac{\beta-2\alpha\cos(2\pi k/n)}{\sqrt{n}}$. Thus, the $v_k$ are eigenvectors. Further, since we know that $\beta>2\alpha$, all the eigenvalues are positive, which implies that $Q$ is strictly positive definite.
 \ssn{d}
-Since this density is invariant under cyclically permuting the variables, all that's needed is to find the distribution of $x_1$ conditioned on all the others. Write the covariance $Q$ as $\openm \beta&Q_{12}\\Q_{21}&Q_{22}\closem$. Then, if the other variables taken together equal some $n-1$-long vector $y$, the conditional mean of $x_1$ is $Q_{12}Q_{22}^{-1}y$ and the conditional variance is $\beta-Q_{12}Q_{22}^{-1}Q_{21}$. For all the variables, $Q_{22}$ will be a $n-1\times n-1$ tridiagonal matrix having $\beta$ on the diagonal and $-\alpha$ on the off-diagonal.
+The conditional variance of $x_i$ conditioned upon all the others is $\frac{1}{Q_{ii}}$, and the conditional mean is $-\frac{1}{Q_{ii}}Q_i^Tx$, with the $i$th coordinate being excluded from the inner product.
+\ssn{e}
+Plots of the trajectories for $\ep=0.01$:
+
+\includegraphics[width=0.9\textwidth]{hw7_files/traj_e2.png}
+
+It looks like things converged, since none of the coordinates are moving around much. On the other hand, for $\ep=0.00001$, the chain definitely has not converged to the stationary distribution.
+
+\includegraphics[width=0.9\textwidth]{hw7_files/traj_e5.png}
+
+Calculating $\rho$ from the estimated covariance matrices, at $\ep=0.00001$, the first 1000 yields $\rho=0.9693$, the last 1000 yields $\rho=1.034$, and the entire sample yields $\rho=0.971$. At $\ep=0.01$, the figures are $0.265$, $-0.291$, and $0.0157$ in the same order.
+\ssn{f}
+Histograms follow. $\ep=0.01$ is on the left.
+
+\includegraphics[width=0.5\textwidth]{hw7_files/e2_hist.png}
+\includegraphics[width=0.5\textwidth]{hw7_files/e5_hist.png}
+\ssn{g}
+Same order as above.
+
+\includegraphics[width=0.5\textwidth]{hw7_files/e2_direct_hist.png}
+\includegraphics[width=0.5\textwidth]{hw7_files/e5_direct_hist.png}
+
+For the $\ep=0.00001$ case, direct sampling is a lot better, but this comes at the cost of having to do a Cholesky on the precision matrix and inverting the resulting upper-triangular matrix.
+\ssn{h}
+If $x_i$ is always either $1$ or $-1$, then $-\frac{1}{2}\beta x_i^2$ is just $-\frac{\beta}{2}$, so we can write 
+\[f\propto\exp\left(\sum_{i=1}^n\alpha x_ix_{i+1}-\frac{\beta}{2}\right)=\exp\left(-\frac{\beta}{2}\right)\exp\left(\sum_{i=1}^n\alpha x_ix_{i+1}\right)\propto\exp\left(\sum_{i=1}^n\alpha x_ix_{i+1}\right)\]
+so $\beta$ is irrelevant to the distribution.
+
+The conditional is simply the joint distribution divided by the marginal over everything but $x_i$, which can be found by evaluating the joint distribution at $x_i=1$ and at $x_i=-1$. For $x_1$, this marginal is
+\[\exp\left(\alpha(x_2+x_2x_3+x_3x_4+x_4)\right)+\exp\left(\alpha(-x_2+x_2x_3+x_3x_4-x_4)\right)\]
+
+The actual probabilities are given in the table below ($-1$s are notated as zeros for readability):
+
+{\tiny
+    \noindent
+\begin{tabular}{r*{16}{c}}
+    0000&0001&0010&0011&0100&0101&0110&0111&1000&1001&1010&1011&1100&1101&1110&1111\\
+    $0.45$&$0.00825$&$0.00825$&$0.00825$&$0.00825$&$0.000151$&$0.00825$&$0.00825$&$0.00825$&$0.00825$&$0.000151$&$0.00825$&$0.00825$&$0.00825$&$0.00825$&$0.45$\\
+\end{tabular}
+}
+
+Most likely states are the $0000$ state and the $1111$ state.
+
+A plot of trajectories is shown below, with the components not labeled nor differentiated. There are 16 lines, each representing the proportion of its corresponding component. The $x$-axis indicates the number of samples taken.
+
+\includegraphics[width=0.6\textwidth]{hw7_files/bin_traj.png}
+
+Looks like the empirical frequencies are converging to the true probabilities.
+\ssn{i}
+The sign in front of the $\beta$ term doesn't matter, since we showed above that the value of $\beta$ doesn't even matter. $\Sigma$ is the same as $Q$ from part (b), except the $\alpha$s no longer carry a negative sign with them. This matrix is still positive definite, since if $\beta>2\alpha$, it is strictly diagonally dominant.
+
+The integral given is the expectation of $\exp(x^Ty)$ under the distribution $g$, which is the moment-generating function evaluated at $x$. The mgf of $g$ is $\exp\left(\frac{1}{2}x^T\Sigma x\right)$, which is proportional to $f$ from above.
+
+Given this, another possible way to sample from $f$ would be to sample first from $g$, then convert all the positive entries to $1$ and all the negative ones to $-1$.
 \end{document}
