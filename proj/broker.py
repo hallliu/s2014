@@ -306,17 +306,20 @@ class Broker:
     self.message_conditions.check_after_conditions(message)
 
     original_value = message.get('value')
+    tamper_all, tamper_destinations = False, set()
     if original_value:
       tamper_all, tamper_destinations = self.message_conditions.check_tamper_conditions(message)
 
     if not should_drop and not should_delay:
       for dest in should_receive:
-        if original_value and tamper_all or dest in tamper_destinations:
-          message['value'] = random.randint(0,1000)
-        else:
-          message['value'] = original_value
-        message['destination'] = [dest]
-        message.send(self.pub, dest)
+        dest_partition = self.find_partition(dest)
+        if not dest_partition or dest_partition == partition:
+          if original_value and tamper_all or dest in tamper_destinations:
+            message['value'] = random.randint(0,1000)
+          else:
+            message['value'] = original_value
+          message['destination'] = [dest]
+          message.send(self.pub, dest)
 
     # Note that delayed messages are subject to partitioning once they are
     # sent, and will still cross partitions if they show up here after the
@@ -452,7 +455,7 @@ class Broker:
         'stop': self.stop_node,
         'get': self.send_get,
         'set': self.send_set,
-        'json': self.send_json,
+        'send': self.send_json,
         'drop': self.message_conditions.add_condition,
         'delay': self.message_conditions.add_condition,
         'after': self.message_conditions.add_condition,
