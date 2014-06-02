@@ -43,7 +43,8 @@ class RaftNode(object):
         }
 
         # Node's Raft state (possibly to be augmented by DHT later?)
-        self.raft_peers = copy(self.peers)
+        self.raft_peers = copy(self.peers) 
+        self.raft_majority_num = len(self.raft_peers) / 2 # include ourself
         self.raft_state = 'follower'
         self.raft_leader = None
 
@@ -108,22 +109,27 @@ class RaftNode(object):
         self.raft_numVotes = 1 # Ourselves
         self.reset_timeout()
 
-    # A periodic (20ms) heartbeat message that gets registered for leaders
+    # A periodic heartbeat message that gets registered for leaders. 
+    # The heartbeat will consult nextIndex and send along entries as well, if
+    # there are any to be sent.
     def leader_heartbeat(self):
         if self.raft_state != 'leader':
             return
-
-        leader_heartbeat = {
-                'type': 'AppendEntries',
-                'destination': self.raft_peers,
-                'source': self.name,
-                'term': self.raft_term,
-                'lastLogIndex': len(self.raft_log) - 1,
-                'lastLogTerm': self.raft_log[-1]['term'],
-                'entries': [],
-                'leaderCommit': self.raft_commitIndex
-        }
-        self.req.send_json(leader_heartbeat)
+        
+        for peer in self.raft_peers:
+            lastLogIndex = self.raft_nextIndex[peer] - 1
+            lastLogTerm = self.raft_log[lastLogIndex]['term']
+            leader_heartbeat = {
+                    'type': 'AppendEntries',
+                    'destination': [peer],
+                    'source': self.name,
+                    'term': self.raft_term,
+                    'lastLogIndex': lastLogIndex,
+                    'lastLogTerm': lastLogTerm,
+                    'entries': self.raft_log[lastLogIndex + 1:],
+                    'leaderCommit': self.raft_commitIndex
+            }
+            self.req.send_json(leader_heartbeat)
 
     def handle_reqvote(self, msg):
         # If term is less, simply reject
@@ -251,22 +257,63 @@ class RaftNode(object):
             self.raft_commitIndex = new_commitIndex
         
         # Send a message back to the leader informing of success.
-        success_msg = {
+        # Keep all the info that the leader sent over because it's needed
+        # to keep track of our state on the leader's side.
+        success_msg = msg.copy()
+        success_msg.update({
                 'type': 'AppendEntryReply',
                 'destination': [msg['source']],
                 'term': self.raft_term,
                 'source': self.name,
                 'success': True
-        }
+        })
         self.req.send_json(success_msg)
 
     def handle_appendentry_reply(self, msg):
+        # Check terms (like always...)
+        if msg['term'] > self.term:
+            self.revert_state(msg['term'])
+        # If the follower is a term behind, just proceed as usual. We'll figure out what happened as we're processing
+        # the returned information.
+
         # If we're not a leader for some reason, just drop the message.
         if self.raft_state != 'leader':
             return
+        
+        # If the AppendEntries was unsuccessful, decrement nextIndex for the receiver
+        # and try again
+        if not msg['success']:
+            self.raft_nextIndex[msg['source']] -= 1
+            lastLogIndex = self.raft_nextIndex[msg['source']] - 1
+            lastLogTerm = self.raft_log[lastLogIndex]
+            retry_appendentry = {
+                    'type': 'AppendEntries',
+                    'destination': [msg['source']],
+                    'source': self.name,
+                    'term': self.raft_term,
+                    'lastLogIndex': lastLogIndex,
+                    'lastLogTerm': lastLogTerm,
+                    'entries': self.raft_log[lastLogIndex + 1:]
+                    'leaderCommit': self.raft_commitIndex
+            }
+            self.req.send_json(retry_appendentry)
+            return
+        
+        # If AppendEntries was successful, then calculate the index of the last logentry
+        # that the follower has.
+        follower_hasUntil = msg['lastLogIndex'] + len(msg['entries'])
+        self.raft_matchIndex[msg['source']] = max(self.raft_matchIndex[msg['source']], follower_hasUntil)
+        self.raft_nextIndex[msg['source']] = self.raft_matchIndex[msg['source']] + 1
 
-
-
+        # Check if we can increase commitIndex
+        matched_indices = sorted(self.raft_matchIndex.values())
+        tentative_commit = matched_indices[len(self.raft_peers) - self.raft_majority_num]
+        if tentative_commit > self.raft_commitIndex:
+            if self.raft_log[tentative_commit]['term'] == self.raft_term:
+                for i in range(self.raft_commitIndex + 1, tentative_commit + 1):
+                    self.commit_entry(self.raft_log[i])
+                self.raft_commitIndex = tentative_commit
+        
     '''
     A bunch of helper functions that take care of common raft state transitions
     '''
