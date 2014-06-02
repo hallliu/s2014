@@ -11,7 +11,7 @@ from copy import copy
 from collections import defaultdict
 ioloop.install()
 
-class RaftNode(object):
+class RaftBaseNode(object):
     def __init__(self, name, pub_endpoint, router_endpoint, peer_names):
         self.loop = ioloop.ZMQIOLoop.current()
         self.context = zmq.Context()
