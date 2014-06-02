@@ -11,7 +11,7 @@ from copy import copy
 from collections import defaultdict
 ioloop.install()
 
-class Node(object):
+class RaftNode(object):
     def __init__(self, name, pub_endpoint, router_endpoint, peer_names):
         self.loop = ioloop.ZMQIOLoop.current()
         self.context = zmq.Context()
@@ -38,12 +38,14 @@ class Node(object):
                 'hello': self.helloRespond,
                 'RequestVote': self.handle_reqvote,
                 'VoteReply': self.handle_votereply,
-                'AppendEntry': self.handle_appendentry
+                'AppendEntry': self.handle_appendentry,
+                'AppendEntryReply': self.handle_appendentry_reply
         }
 
         # Node's Raft state (possibly to be augmented by DHT later?)
         self.raft_peers = copy(self.peers)
         self.raft_state = 'follower'
+        self.raft_leader = None
 
         '''
         The format of each log entry is a dict. The 'term' value is constant among all of them, and
@@ -65,10 +67,11 @@ class Node(object):
         self.raft_nextIndex = None
         self.raft_matchIndex = None
 
-    def start(self):
-        self.loop.start()
         # Initialize the election timeout
         self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
+
+    def start(self):
+        self.loop.start()
 
     def handle_broker_message(self, frames):
         pass
@@ -90,6 +93,7 @@ class Node(object):
     # Not strictly a handler, but it responds directly to loop events, so I'm putting it here.
     def leader_timeout(self):
         self.log_info('Server {0} hit election timeout'.format(self.name))
+        self.raft_leader = None
         self.raft_state = 'candidate'
         self.raft_term += 1
         reqvote_msg = {
@@ -103,6 +107,23 @@ class Node(object):
         self.raft_lastvote = self.name
         self.raft_numVotes = 1 # Ourselves
         self.reset_timeout()
+
+    # A periodic (20ms) heartbeat message that gets registered for leaders
+    def leader_heartbeat(self):
+        if self.raft_state != 'leader':
+            return
+
+        leader_heartbeat = {
+                'type': 'AppendEntries',
+                'destination': self.raft_peers,
+                'source': self.name,
+                'term': self.raft_term,
+                'lastLogIndex': len(self.raft_log) - 1,
+                'lastLogTerm': self.raft_log[-1]['term'],
+                'entries': [],
+                'leaderCommit': self.raft_commitIndex
+        }
+        self.req.send_json(leader_heartbeat)
 
     def handle_reqvote(self, msg):
         # If term is less, simply reject
@@ -175,12 +196,16 @@ class Node(object):
                 'type': 'AppendEntryReply',
                 'destination': [msg['source']],
                 'term': self.raft_term,
+                'source': self.name,
                 'success': False
         }
 
         if self.raft_term > msg['term']:
             self.req.send_json(reject_msg)
             return
+
+        self.reset_timeout()
+        self.raft_leader = msg['source']
 
         # Check log for the lastLogIndex and see if it matches up with the one from the message
         # First case is for is when self's log is too short
@@ -203,6 +228,9 @@ class Node(object):
         # mismatch, and stick the rest of the entries from the message onto the
         # end of the remnants.
         rcvd_entries = msg['entries']
+        if len(rcvd_entries) == 0:
+            return
+
         for logIndex in range(supposed_lastLogIndex + 1, len(self.raft_log)):
             newEntry_index = logIndex - supposed_lastLogIndex + 1
             if newEntry_index >= len(rcvd_entries):
@@ -227,9 +255,16 @@ class Node(object):
                 'type': 'AppendEntryReply',
                 'destination': [msg['source']],
                 'term': self.raft_term,
+                'source': self.name,
                 'success': True
         }
         self.req.send_json(success_msg)
+
+    def handle_appendentry_reply(self, msg):
+        # If we're not a leader for some reason, just drop the message.
+        if self.raft_state != 'leader':
+            return
+
 
 
     '''
@@ -240,6 +275,10 @@ class Node(object):
         self.raft_state = 'follower'
         self.raft_term = term
         self.raft_lastvote = None
+        try:
+            self.loop.remove_timeout(self.leader_refresh)
+        except:
+            pass
     
     # Upon receiving a sufficient number of votes, become leader using this function
     def become_leader(self):
@@ -264,6 +303,8 @@ class Node(object):
                 'leaderCommit': self.raft_commitIndex
         }
         self.req.send_json(leader_heartbeat)
+        self.raft_leader = self.name 
+        self.leader_refresh = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = 20), self.leader_heartbeat)
         self.log_info('Election won, becoming leader')
     
     # Reset the timeout to another 150-300ms interval from now.
