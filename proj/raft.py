@@ -68,10 +68,10 @@ class RaftNode(object):
         self.raft_nextIndex = None
         self.raft_matchIndex = None
 
-        # Initialize the election timeout
-        self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
 
     def start(self):
+        # Initialize the election timeout
+        self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
         self.loop.start()
 
     def handle_broker_message(self, frames):
@@ -133,7 +133,7 @@ class RaftNode(object):
 
     def handle_reqvote(self, msg):
         # If term is less, simply reject
-        elif msg['term'] < self.raft_term:
+        if msg['term'] < self.raft_term:
             reject_msg = {
                     'type': 'VoteReply',
                     'destination': [msg['source']],
