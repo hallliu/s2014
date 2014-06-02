@@ -53,7 +53,7 @@ class Node(object):
 
         self.raft_term = 0
         self.raft_lastvote = None
-        self.raft_commitIndex = 0
+        self.raft_commitIndex = -1
         self.raft_lastApplied = 0
 
         self.raft_timeout = None
@@ -172,8 +172,9 @@ class Node(object):
             revert_state(self, msg['term'])
 
         reject_msg = {
-                'term': self.raft_term,
+                'type': 'AppendEntryReply',
                 'destination': [msg['source']],
+                'term': self.raft_term,
                 'success': False
         }
 
@@ -213,8 +214,22 @@ class Node(object):
 
         self.raft_log.extend(rcvd_entries)
         self.log_info('Successfully appended {0} entries to own log'.format(len(rcvd_entries)))
-        
 
+        # Take care of updating commitIndex and actually commiting the commands that we got sent.
+        if msg['leaderCommit'] > self.raft_commitIndex:
+            new_commitIndex = min(msg['leaderCommit'], len(raft_log) - 1)
+            for entry in self.raft_log[self.raft_commitIndex + 1:new_commitIndex + 1]:
+                self.commit_entry(entry)
+            self.raft_commitIndex = new_commitIndex
+        
+        # Send a message back to the leader informing of success.
+        success_msg = {
+                'type': 'AppendEntryReply',
+                'destination': [msg['source']],
+                'term': self.raft_term,
+                'success': True
+        }
+        self.req.send_json(success_msg)
 
 
     '''
@@ -258,6 +273,10 @@ class Node(object):
 
         self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
 
+    # The function that applies the log entry to whatever internal state we're using.
+    # This is the function that should be overriden by any derived subclasses.
+    def commit_entry(self, log_entry):
+        pass
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
