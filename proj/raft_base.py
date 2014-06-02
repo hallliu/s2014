@@ -68,6 +68,9 @@ class RaftBaseNode(object):
         self.raft_nextIndex = None
         self.raft_matchIndex = None
 
+        # This is a dict of pending GET requests. We need to wait on
+        # a majority of heartbeat messages to get sent out and come back.
+        self.pending_getReq_count = defaultdict(int)
 
     def start(self):
         # Initialize the election timeout
@@ -210,6 +213,8 @@ class RaftBaseNode(object):
             self.req.send_json(reject_msg)
             return
 
+
+
         self.reset_timeout()
         self.raft_leader = msg['source']
 
@@ -280,6 +285,12 @@ class RaftBaseNode(object):
         if self.raft_state != 'leader':
             return
         
+        # Some special handling for GET requests.
+        if msg.get('id') is not None:
+            self.pending_getReq_count[msg['id']] += 1
+            if self.pending_getReq_count[msg['id']] >= self.raft_majority_num:
+                self.respond_to_getReq(msg['id'])
+
         # If the AppendEntries was unsuccessful, decrement nextIndex for the receiver
         # and try again
         if not msg['success']:
@@ -322,6 +333,7 @@ class RaftBaseNode(object):
         self.raft_state = 'follower'
         self.raft_term = term
         self.raft_lastvote = None
+        self.pending_getReq_count = {}
         try:
             self.loop.remove_timeout(self.leader_refresh)
         except:
@@ -337,20 +349,12 @@ class RaftBaseNode(object):
         self.raft_state = 'leader'
         self.raft_nextIndex = defaultdict(lambda: len(self.raft_log) + 1)
         self.raft_matchIndex = defaultdict(int)
-
-        # Send out a heartbeat AppendEntries to all peers
-        leader_heartbeat = {
-                'type': 'AppendEntries',
-                'destination': self.raft_peers,
-                'source': self.name,
-                'term': self.raft_term,
-                'lastLogIndex': len(self.raft_log) - 1,
-                'lastLogTerm': self.raft_log[-1]['term'],
-                'entries': [],
-                'leaderCommit': self.raft_commitIndex
-        }
-        self.req.send_json(leader_heartbeat)
         self.raft_leader = self.name 
+
+        # Send out a heartbeat AppendEntries to all peers, while adding a noop.
+        self.raft_log.append({'term': self.raft_term, 'action': None})
+        self.leader_heartbeat()
+        
         self.leader_refresh = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = 20), self.leader_heartbeat)
         self.log_info('Election won, becoming leader')
     
@@ -364,6 +368,10 @@ class RaftBaseNode(object):
     # The function that applies the log entry to whatever internal state we're using.
     # This is the function that should be overriden by any derived subclasses.
     def commit_entry(self, log_entry):
+        pass
+
+    # Same here, should be implemented in derived subclass.
+    def respond_to_getReq(self, getId):
         pass
 
     def log_info(self, s):
