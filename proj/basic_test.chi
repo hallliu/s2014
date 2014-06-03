@@ -1,0 +1,9 @@
+# this demonstrates simple capabilities
+start A1 --peer-names A2,A3,A4,A5
+start A2 --peer-names A1,A3,A4,A5
+start A3 --peer-names A1,A2,A4,A5
+start A4 --peer-names A1,A2,A3,A5
+start A5 --peer-names A1,A2,A3,A4
+start C --peer-names A1,A2,A3,A4,A5 --client
+set C foo 121
+get C foo
