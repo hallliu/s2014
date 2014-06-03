@@ -7,3 +7,8 @@ start A4 --peer-names A1,A2,A3,A5
 start A5 --peer-names A1,A2,A3,A4
 set CL foo 121
 get CL foo
+stop A1
+stop A2
+stop A3
+stop A4
+stop A5

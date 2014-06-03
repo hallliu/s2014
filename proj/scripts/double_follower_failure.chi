@@ -1,19 +1,20 @@
-# this one stores multiple values with overwrites
+# two followers fail (partitioned from each other and all others) then join back up
 start CL --peer-names A1,A2,A3,A4,A5 --client
-start A1 --peer-names A2,A3,A4,A5
+start A1 --peer-names A2,A3,A4,A5 --likely_leader
 start A2 --peer-names A1,A3,A4,A5
 start A3 --peer-names A1,A2,A4,A5
 start A4 --peer-names A1,A2,A3,A5
 start A5 --peer-names A1,A2,A3,A4
-set CL k1 13
-set CL k2 18
-set CL k3 17
+set CL k1 100
 get CL k1
-get CL k2
-get CL k3
-set CL k2 99
-set CL k3 13
-get CL k3
+split l2 A2
+split l3 A3
+get CL k1
+set CL k1 20
+join l2
+join l3
+set CL k2 30
+get CL k1
 get CL k2
 stop A1
 stop A2

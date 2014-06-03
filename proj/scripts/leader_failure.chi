@@ -12,3 +12,8 @@ get CL k1
 set CL k1 23
 join lp
 get CL k1
+stop A1
+stop A2
+stop A3
+stop A4
+stop A5
