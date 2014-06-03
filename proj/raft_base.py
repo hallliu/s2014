@@ -3,7 +3,6 @@ import json
 import datetime
 import zmq
 from zmq.eventloop import ioloop, zmqstream
-import argparse
 from copy import copy
 from collections import defaultdict
 ioloop.install()
