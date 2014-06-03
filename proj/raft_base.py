@@ -300,7 +300,7 @@ class RaftBaseNode(object):
                     'term': self.raft_term,
                     'lastLogIndex': lastLogIndex,
                     'lastLogTerm': lastLogTerm,
-                    'entries': self.raft_log[lastLogIndex + 1:]
+                    'entries': self.raft_log[lastLogIndex + 1:],
                     'leaderCommit': self.raft_commitIndex
             }
             self.req.send_json(retry_appendentry)

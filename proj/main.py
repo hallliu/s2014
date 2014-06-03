@@ -4,6 +4,7 @@ from clientNode import ClientNode
 import sys
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--pub-endpoint',
         dest='pub_endpoint', type=str,
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     sys.stdout = open('/tmp/{0}_log'.format(args.node_name), 'w')
     sys.stderr = sys.stdout
 
-    if parser.client:
+    if args.client:
         ClientNode(args.node_name, args.pub_endpoint, args.router_endpoint, args.peer_names).start()
     else:
         RaftNode(args.node_name, args.pub_endpoint, args.router_endpoint, args.peer_names).start()
