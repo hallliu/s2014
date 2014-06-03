@@ -50,7 +50,7 @@ class ClientNode(object):
         }
 
         self.max_retries = 4
-        self.msg_timeout = datetime.timedelta(milliseconds = 300)
+        self.msg_timeout = 0.3
         # Randomly pick a leader to interface with. If we're wrong, oh well.
         self.raft_leader = self.peers[0] 
 
@@ -131,6 +131,13 @@ class ClientNode(object):
     def handle_redirect(self, msg):
         # Just update who we think the leader is, then resend. If too many redirects, fail.
         self.raft_leader = msg['redir_target']
+        
+        # This can be None -- if we end up on the wrong side of a network partition
+        # or if we contact a candidate.
+        # In that case, just pick a random node and try that.
+        if self.raft_leader is None: 
+            self.raft_leader = random.choice(self.peers)
+
         retry_info = self.broker_requests[self.raft_broker_map[msg['id']]]
         self.retry_message(retry_info, msg['id'])
 

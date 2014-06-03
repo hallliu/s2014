@@ -70,7 +70,7 @@ class RaftBaseNode(object):
 
     def start(self):
         # Initialize the election timeout
-        self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
+        self.raft_timeout = self.loop.add_timeout(self.loop.time() + random.randint(150, 300)/1000., self.leader_timeout)
         self.loop.start()
 
     def handle_broker_message(self, frames):
@@ -351,7 +351,7 @@ class RaftBaseNode(object):
         self.raft_log.append({'term': self.raft_term, 'action': None})
         self.leader_heartbeat()
         
-        self.leader_refresh = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = 20), self.leader_heartbeat)
+        self.leader_refresh = self.loop.add_timeout(self.loop.time() + 0.02, self.leader_heartbeat)
         self.log_info('Election won, becoming leader')
     
     # Reset the timeout to another 150-300ms interval from now.
@@ -359,7 +359,7 @@ class RaftBaseNode(object):
         if self.raft_timeout is not None:
             self.loop.remove_timeout(self.raft_timeout)
 
-        self.raft_timeout = self.loop.add_timeout(self.loop.time() + datetime.timedelta(milliseconds = random.randint(150, 300)), self.leader_timeout)
+        self.raft_timeout = self.loop.add_timeout(self.loop.time() + random.randint(150, 300)/1000., self.leader_timeout)
 
     # The function that applies the log entry to whatever internal state we're using.
     # This is the function that should be overriden by any derived subclasses.
