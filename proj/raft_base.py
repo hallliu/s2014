@@ -8,9 +8,10 @@ from collections import defaultdict
 ioloop.install()
 
 class RaftBaseNode(object):
-    def __init__(self, name, pub_endpoint, router_endpoint, peer_names):
+    def __init__(self, name, pub_endpoint, router_endpoint, peer_names, **kwargs):
         self.loop = ioloop.ZMQIOLoop.current()
         self.context = zmq.Context()
+        self.kwargs = kwargs
     
         # SUB socket for receiving messages from the broker
         self.sub_sock = self.context.socket(zmq.SUB)
@@ -94,6 +95,9 @@ class RaftBaseNode(object):
             self.hello_sent = True
             self.req.send_json({'type': 'log', 'message': 'hello received'})
 
+            if self.kwargs.get('likely_leader'):
+                self.leader_timeout() # This guarantees that this node will start the election first
+
     # Not strictly a handler, but it responds directly to loop events, so I'm putting it here.
     def leader_timeout(self):
         self.log_info('Server {0} hit election timeout'.format(self.name))
@@ -155,6 +159,7 @@ class RaftBaseNode(object):
         # going for candidacy again soon. Thus, reset the timeout.
         self.reset_timeout()
 
+        self.log_info('Our term={0}, their term={1}'.format(self.raft_term, msg['term']))
         # Check if term is larger and change own status as appropriate
         if msg['term'] > self.raft_term:
             self.revert_state(msg['term'])
@@ -334,7 +339,7 @@ class RaftBaseNode(object):
         if term > self.raft_term:
             self.raft_lastvote = None
         self.raft_term = term
-        self.pending_getReq_count = {}
+        self.pending_getReq_count = defaultdict(int)
         try:
             self.loop.remove_timeout(self.leader_refresh)
         except:

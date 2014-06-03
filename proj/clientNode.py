@@ -138,6 +138,7 @@ class ClientNode(object):
         if self.raft_leader is None: 
             self.raft_leader = random.choice(self.peers)
 
+        self.log_info('Redirected to {0}'.format(self.raft_leader))
         retry_info = self.broker_requests[self.raft_broker_map[msg['id']]]
         self.retry_message(retry_info, msg['id'])
 
@@ -174,8 +175,10 @@ class ClientNode(object):
         if retry_info is None:
             return
 
-        self.log_info('Request id {0} timed out. Retrying ({1} of 4)'.format(brokerId, retry_info['num_retries']))
+        # Change the point-of-contact because we don't know what made it time out
+        self.raft_leader = random.choice(self.peers) 
         self.retry_message(retry_info, self.id_for_raft)
+        self.log_info('Request id {0} timed out. Retrying {1}th iteration to {2}'.format(brokerId, retry_info['num_retries'], self.raft_leader))
 
         # Update the mapping in self.raft_broker_map and set a new timeout
         self.raft_broker_map[self.id_for_raft] = brokerId

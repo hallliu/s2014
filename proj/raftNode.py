@@ -5,8 +5,8 @@ A derived class of the base node -- this just implements a k-v store on top of R
 This handles the client interaction with the custom client node (in another file)
 '''
 class RaftNode(RaftBaseNode):
-    def __init__(self, name, pub_endpoint, router_endpoint, peer_names):
-        RaftBaseNode.__init__(self, name, pub_endpoint, router_endpoint, peer_names)
+    def __init__(self, name, pub_endpoint, router_endpoint, peer_names, **kwargs):
+        RaftBaseNode.__init__(self, name, pub_endpoint, router_endpoint, peer_names, **kwargs)
         self.data_store = {}
 
         # Add message handlers for the client-facing get/set commands. Note that

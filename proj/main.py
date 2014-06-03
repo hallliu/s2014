@@ -19,6 +19,7 @@ if __name__ == '__main__':
         dest='peer_names', type=str,
         default='')
     parser.add_argument('--client', action='store_true')
+    parser.add_argument('--likely_leader', action='store_true')
 
     args = parser.parse_args()
     args.peer_names = args.peer_names.split(',')
@@ -30,4 +31,4 @@ if __name__ == '__main__':
     if args.client:
         ClientNode(args.node_name, args.pub_endpoint, args.router_endpoint, args.peer_names).start()
     else:
-        RaftNode(args.node_name, args.pub_endpoint, args.router_endpoint, args.peer_names).start()
+        RaftNode(args.node_name, args.pub_endpoint, args.router_endpoint, args.peer_names, likely_leader = args.likely_leader).start()
