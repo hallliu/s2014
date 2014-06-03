@@ -48,11 +48,11 @@ class RaftBaseNode(object):
         The format of each log entry is a dict. The 'term' value is constant among all of them, and
         all the other entries are to be used by any derived subclasses to adjust their own state.
         '''
-        self.raft_log = []
+        self.raft_log = [{'term': -1, 'action': None}] # Start with a dummy entry in front so indices aren't confused.
 
         self.raft_term = 0
         self.raft_lastvote = None
-        self.raft_commitIndex = -1
+        self.raft_commitIndex = 0
         self.raft_lastApplied = 0
 
         self.raft_timeout = None
@@ -98,6 +98,7 @@ class RaftBaseNode(object):
         self.raft_term += 1
         reqvote_msg = {
                 'type': 'RequestVote',
+                'destination': self.raft_peers,
                 'source': self.name,
                 'term': self.raft_term,
                 'lastLogIndex': len(self.raft_log) - 1,
@@ -153,7 +154,7 @@ class RaftBaseNode(object):
 
         # Decide whether to grant the vote
         hasNotVoted = self.raft_lastvote is None
-        cand_uptodate = self.raft_log[-1]['term'] <= msg['lastLogTerm'] and len(self.raft_log) - 1 <= msg['raft_lastLogIndex']
+        cand_uptodate = self.raft_log[-1]['term'] <= msg['lastLogTerm'] and len(self.raft_log) - 1 <= msg['lastLogIndex']
         if hasNotVoted and cand_uptodate:
             vote_msg = {
                     'type': 'VoteReply',
