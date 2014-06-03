@@ -57,7 +57,7 @@ To pare down the right side, first note that the (non-empirical) expectation is 
 \[E(f(X_i,X_{N_i})|X_{N_i}=x_{N_i})=\sum_{x_i}f(x_i,x_{N_i})P(x_i|x_{N_i})=\sum_{x_i}f(x_i, x_{N_i})\frac{\exp\left(\beta f(x_i,x_{N_i})\right)}{\sum_{x_i'}\exp\left(\beta f(x_i',x_{N_i})\right)}\]
 Conveniently, this is the same as the inner summand of the RHS, so we can write the RHS as
 \[\sum_{i=1}^d\sum_{n=1}^NE(f(X_i^{(n)},X_{N_i}^{(n)})|X_{N_i})=\sum_{i=1}^d\sum_{x_{N_i}}E(f(X_i,X_{N_i})|X_{N_i}=x_{N_i})\left|\{n:X_{N_i}=x_{N_i}\}\right|\]
-Then, trimming away the leftover counts (which are attached to the same terms on both sides) gives us the desired equality.
+Thus we have the desired equality (after the Monday correction).
 \ssn{d}
 In the same vein as (b), the log-pseudolikelihood is
 \[\sum_{n=1}^N\sum_{i=1}^d\left(\sum_{C\in C(i)}\beta_C\psi_{C}(X_{C})-\log\left(\sum_{X_i}\exp\left(\sum_{C\in C(i)}\beta_C\psi_C(X_C)\right)\right)\right)\]
