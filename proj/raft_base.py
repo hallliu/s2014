@@ -136,6 +136,8 @@ class RaftBaseNode(object):
             }
             self.req.send_json(leader_heartbeat)
 
+        self.leader_refresh = self.loop.add_timeout(self.loop.time() + 0.02, self.leader_heartbeat)
+
     def handle_reqvote(self, msg):
         # If term is less, simply reject
         if msg['term'] < self.raft_term:
@@ -231,7 +233,7 @@ class RaftBaseNode(object):
         supposed_lastLogIndex = msg['lastLogIndex']
         prev_entry_term = self.raft_log[supposed_lastLogIndex]['term']
         if prev_entry_term != msg['lastLogTerm']:
-            self.log_info('Term mismatch at index {0}'.format(supposed_lastLogIndex))
+            self.log_info('Term mismatch at index {0}. Have {1}, rcvd {2}'.format(supposed_lastLogIndex, prev_entry_term, msg['lastLogTerm']))
             self.raft_log = self.raft_log[:supposed_lastLogIndex]
             self.req.send_json(reject_msg)
             return
@@ -255,12 +257,14 @@ class RaftBaseNode(object):
 
         self.raft_log.extend(rcvd_entries)
         self.log_info('Successfully appended {0} entries to own log'.format(len(rcvd_entries)))
+        self.log_info(str(rcvd_entries[0]))
 
         # Take care of updating commitIndex and actually commiting the commands that we got sent.
         if msg['leaderCommit'] > self.raft_commitIndex:
-            new_commitIndex = min(msg['leaderCommit'], len(raft_log) - 1)
+            new_commitIndex = min(msg['leaderCommit'], len(self.raft_log) - 1)
             for entry in self.raft_log[self.raft_commitIndex + 1:new_commitIndex + 1]:
                 self.commit_entry(entry)
+            self.log_info('Committed log entries {0}-{1} inclusive at term {2}'.format(self.raft_commitIndex+1, new_commitIndex, self.raft_term))
             self.raft_commitIndex = new_commitIndex
         
         # Send a message back to the leader informing of success.
@@ -296,7 +300,7 @@ class RaftBaseNode(object):
         if not msg['success']:
             self.raft_nextIndex[msg['source']] -= 1
             lastLogIndex = self.raft_nextIndex[msg['source']] - 1
-            lastLogTerm = self.raft_log[lastLogIndex]
+            lastLogTerm = self.raft_log[lastLogIndex]['term']
             retry_appendentry = {
                     'type': 'AppendEntries',
                     'destination': [msg['source']],
@@ -349,16 +353,15 @@ class RaftBaseNode(object):
 
         # Adjust own state.
         self.raft_state = 'leader'
-        self.raft_nextIndex = defaultdict(lambda: len(self.raft_log))
-        self.raft_matchIndex = defaultdict(int)
+        default_nI = len(self.raft_log)
+        self.raft_nextIndex = {x:default_nI for x in self.raft_peers}
+        self.raft_matchIndex = {x:0 for x in self.raft_peers}
         self.raft_leader = self.name 
 
         # Send out a heartbeat AppendEntries to all peers, while adding a noop.
         self.raft_log.append({'term': self.raft_term, 'action': None})
         self.leader_heartbeat()
         
-        self.leader_refresh = self.loop.add_timeout(self.loop.time() + 0.02, self.leader_heartbeat)
-    
     # Reset the timeout to another 150-300ms interval from now.
     def reset_timeout(self):
         if self.raft_timeout is not None:
