@@ -18,9 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('--peer-names',
         dest='peer_names', type=str,
         default='')
-    parser.add_argument('--client',
-        dest='client', type=bool,
-        default=False)
+    parser.add_argument('--client', action='store_true')
 
     args = parser.parse_args()
     args.peer_names = args.peer_names.split(',')
