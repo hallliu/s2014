@@ -217,8 +217,6 @@ class RaftBaseNode(object):
             self.req.send_json(reject_msg)
             return
 
-
-
         self.reset_timeout()
         self.raft_leader = msg['source']
 
@@ -243,29 +241,27 @@ class RaftBaseNode(object):
         # mismatch, and stick the rest of the entries from the message onto the
         # end of the remnants.
         rcvd_entries = msg['entries']
-        if len(rcvd_entries) == 0:
-            return
+        if len(rcvd_entries) > 0:
+            for logIndex in range(supposed_lastLogIndex + 1, len(self.raft_log)):
+                newEntry_index = logIndex - supposed_lastLogIndex + 1
+                if newEntry_index >= len(rcvd_entries):
+                    break
+                if self.raft_log[logIndex]['term'] != rcvd_entries[newEntry_index]['term']:
+                    self.raft_log = self.raft_log[:logIndex]
+                    break
+                rcvd_entries.pop(0) # inefficient, but these usually aren't that big...
 
-        for logIndex in range(supposed_lastLogIndex + 1, len(self.raft_log)):
-            newEntry_index = logIndex - supposed_lastLogIndex + 1
-            if newEntry_index >= len(rcvd_entries):
-                break
-            if self.raft_log[logIndex]['term'] != rcvd_entries[newEntry_index]['term']:
-                self.raft_log = self.raft_log[:logIndex]
-                break
-            rcvd_entries.pop(0) # inefficient, but these usually aren't that big...
+            self.raft_log.extend(rcvd_entries)
+            self.log_info('Successfully appended {0} entries to own log'.format(len(rcvd_entries)))
+            self.log_info(str(rcvd_entries[0]))
 
-        self.raft_log.extend(rcvd_entries)
-        self.log_info('Successfully appended {0} entries to own log'.format(len(rcvd_entries)))
-        self.log_info(str(rcvd_entries[0]))
-
-        # Take care of updating commitIndex and actually commiting the commands that we got sent.
-        if msg['leaderCommit'] > self.raft_commitIndex:
-            new_commitIndex = min(msg['leaderCommit'], len(self.raft_log) - 1)
-            for entry in self.raft_log[self.raft_commitIndex + 1:new_commitIndex + 1]:
-                self.commit_entry(entry)
-            self.log_info('Committed log entries {0}-{1} inclusive at term {2}'.format(self.raft_commitIndex+1, new_commitIndex, self.raft_term))
-            self.raft_commitIndex = new_commitIndex
+            # Take care of updating commitIndex and actually commiting the commands that we got sent.
+            if msg['leaderCommit'] > self.raft_commitIndex:
+                new_commitIndex = min(msg['leaderCommit'], len(self.raft_log) - 1)
+                for entry in self.raft_log[self.raft_commitIndex + 1:new_commitIndex + 1]:
+                    self.commit_entry(entry)
+                self.log_info('Committed log entries {0}-{1} inclusive at term {2}'.format(self.raft_commitIndex+1, new_commitIndex, self.raft_term))
+                self.raft_commitIndex = new_commitIndex
         
         # Send a message back to the leader informing of success.
         # Keep all the info that the leader sent over because it's needed

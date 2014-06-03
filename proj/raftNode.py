@@ -20,6 +20,7 @@ class RaftNode(RaftBaseNode):
 
         # A dict of GET requests
         self.getReq_info = {}
+
     def handle_clientget(self, msg):
         # If we're not the leader, send a redirect message
         if self.raft_state != 'leader':
@@ -34,18 +35,21 @@ class RaftNode(RaftBaseNode):
         
         # Send out a heartbeat to make sure we're still the leader.
         # If everything else comes back okay, reply with the value.
-        poke_msg = {
-                'type': 'AppendEntries',
-                'destination': self.raft_peers,
-                'source': self.name,
-                'term': self.raft_term,
-                'lastLogIndex': lastLogIndex,
-                'lastLogTerm': lastLogTerm,
-                'entries': self.raft_log[lastLogIndex + 1:],
-                'leaderCommit': self.raft_commitIndex,
-                'id': msg['id']
-        }
-        self.req.send_json(poke_msg)
+        for peer in self.raft_peers:
+            lastLogIndex = self.raft_nextIndex[peer] - 1
+            lastLogTerm = self.raft_log[lastLogIndex]['term']
+            poke_msg = {
+                    'type': 'AppendEntries',
+                    'destination': [peer],
+                    'source': self.name,
+                    'term': self.raft_term,
+                    'lastLogIndex': lastLogIndex,
+                    'lastLogTerm': lastLogTerm,
+                    'entries': self.raft_log[lastLogIndex + 1:],
+                    'leaderCommit': self.raft_commitIndex,
+                    'id': msg['id']
+            }
+            self.req.send_json(poke_msg)
 
         # Register the get request in our dict of pending ones
         self.getReq_info[msg['id']] = {
@@ -108,6 +112,7 @@ class RaftNode(RaftBaseNode):
                 'id': getId
         }
         self.req.send_json(response)
+        print 'GET successful'
         del self.getReq_info[getId]
 
     '''
