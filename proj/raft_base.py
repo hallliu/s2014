@@ -34,7 +34,7 @@ class RaftBaseNode(object):
                 'hello': self.helloRespond,
                 'RequestVote': self.handle_reqvote,
                 'VoteReply': self.handle_votereply,
-                'AppendEntry': self.handle_appendentry,
+                'AppendEntries': self.handle_appendentry,
                 'AppendEntryReply': self.handle_appendentry_reply
         }
 
@@ -78,6 +78,10 @@ class RaftBaseNode(object):
 
     def msg_handler(self, frames):
         msg = json.loads(frames[2])
+        # If we haven't sent the hello yet, don't respond to anything because
+        # it fucks up the broker
+        if not self.hello_sent and msg['type'] != 'hello':
+            return
         handler_fn = self.message_handlers.get(msg['type'], self.log_info)
         handler_fn(msg)
 
@@ -113,6 +117,7 @@ class RaftBaseNode(object):
     # The heartbeat will consult nextIndex and send along entries as well, if
     # there are any to be sent.
     def leader_heartbeat(self):
+        print 'leader heartbeat from {0}'.format(self.name)
         if self.raft_state != 'leader':
             return
         
@@ -172,7 +177,7 @@ class RaftBaseNode(object):
                     'term': self.raft_term,
                     'voteGranted': False
             }
-            self.req.send_json(vote_msg)
+            self.req.send_json(reject_msg)
             log_msg = 'Rejected vote req from {0} due to hasNotVoted={1} and uptodate={2}'.format(msg['source'], hasNotVoted, cand_uptodate)
             self.log_info(log_msg)
         
@@ -189,14 +194,14 @@ class RaftBaseNode(object):
         if msg['voteGranted']:
             self.raft_numVotes += 1
             self.log_info('Vote received, {0} total'.format(self.raft_numVotes))
-            if self.raft_numVotes >= len(self.raft_peers) + 1:
+            if self.raft_numVotes >= len(self.raft_peers)/2 + 1:
                 self.become_leader()
 
     def handle_appendentry(self, msg):
         # Check terms before doing anything else. Note that if the terms are equal and self is
         # in follower mode, revert_state does absolutely nothing.
         if self.raft_term <= msg['term']:
-            revert_state(self, msg['term'])
+            self.revert_state(msg['term'])
 
         reject_msg = {
                 'type': 'AppendEntryReply',
@@ -218,7 +223,7 @@ class RaftBaseNode(object):
         # Check log for the lastLogIndex and see if it matches up with the one from the message
         # First case is for is when self's log is too short
         if len(self.raft_log) <= msg['lastLogIndex']:
-            self.log_info('Self\'s log too short, failing')
+            self.log_info('Self\'s log too short. Have {0} entries, lLI={1}'.format(len(self.raft_log), msg['lastLogIndex']))
             self.req.send_json(reject_msg)
             return
         
@@ -273,10 +278,8 @@ class RaftBaseNode(object):
 
     def handle_appendentry_reply(self, msg):
         # Check terms (like always...)
-        if msg['term'] > self.term:
+        if msg['term'] > self.raft_term:
             self.revert_state(msg['term'])
-        # If the follower is a term behind, just proceed as usual. We'll figure out what happened as we're processing
-        # the returned information.
 
         # If we're not a leader for some reason, just drop the message.
         if self.raft_state != 'leader':
@@ -328,8 +331,9 @@ class RaftBaseNode(object):
     # Resets self back to follower state upon receiving a message with a higher term
     def revert_state(self, term):
         self.raft_state = 'follower'
+        if term > self.raft_term:
+            self.raft_lastvote = None
         self.raft_term = term
-        self.raft_lastvote = None
         self.pending_getReq_count = {}
         try:
             self.loop.remove_timeout(self.leader_refresh)
@@ -338,13 +342,14 @@ class RaftBaseNode(object):
     
     # Upon receiving a sufficient number of votes, become leader using this function
     def become_leader(self):
+        self.log_info('Election won, becoming leader')
         # Remove the timeout. Leaders don't need timeouts, because they're cool.
         if self.raft_timeout is not None:
             self.loop.remove_timeout(self.raft_timeout)
 
         # Adjust own state.
         self.raft_state = 'leader'
-        self.raft_nextIndex = defaultdict(lambda: len(self.raft_log) + 1)
+        self.raft_nextIndex = defaultdict(lambda: len(self.raft_log))
         self.raft_matchIndex = defaultdict(int)
         self.raft_leader = self.name 
 
@@ -353,7 +358,6 @@ class RaftBaseNode(object):
         self.leader_heartbeat()
         
         self.leader_refresh = self.loop.add_timeout(self.loop.time() + 0.02, self.leader_heartbeat)
-        self.log_info('Election won, becoming leader')
     
     # Reset the timeout to another 150-300ms interval from now.
     def reset_timeout(self):
