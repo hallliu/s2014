@@ -45,8 +45,8 @@ class ClientNode(object):
                 'get': self.handle_get,
                 'set': self.handle_set,
                 'redirect': self.handle_redirect,
-                'set_success': self.handle_set_success,
-                'get_success': self.handle_get_success
+                'set_success': self.handle_success,
+                'get_success': self.handle_success
         }
 
         self.max_retries = 4
@@ -55,7 +55,7 @@ class ClientNode(object):
         self.raft_leader = self.peers[0] 
 
         # Record of broker's requests associated with request id. Each entry is
-        # a dict with fields type, key, val, timeout, num_retries. Assert error if 3 retries.
+        # a dict with fields type, key, val, timeout, num_retries, id. 
         self.broker_requests = {}
 
         # IDs for use in Raft. Incremented once every time a request is sent off (unless
@@ -90,7 +90,8 @@ class ClientNode(object):
                 'type': 'get',
                 'key': msg['key'],
                 'timeout': timeout,
-                'num_retries': 0
+                'num_retries': 0,
+                'id': msg['id']
         }
 
         self.raft_broker_map[self.id_for_raft] = msg['id']
@@ -111,7 +112,8 @@ class ClientNode(object):
                 'key': msg['key'],
                 'value': msg['value'],
                 'timeout': timeout,
-                'num_retries': 0
+                'num_retries': 0,
+                'id': msg['id']
         }
 
         self.raft_broker_map[self.id_for_raft] = msg['id']
@@ -132,12 +134,52 @@ class ClientNode(object):
         retry_info = self.broker_requests[self.raft_broker_map[msg['id']]]
         self.retry_message(retry_info, msg['id'])
 
+    def handle_success(self, msg):
+        success_type = msg['type'][:3]
+        req_info = self.broker_requests[self.raft_broker_map[msg['id']]]
+        self.loop.remove_timeout(req_info['timeout'])
+        del self.broker_requests[req_info['id']]
+        
+        success_msg = {
+                'type': success_type + 'Response',
+                'id': req_info['id']
+        }
+        if success_type == 'get':
+            success_msg['value'] = msg['value']
+        else:
+            success_msg['value'] = req_info['value']
+
+        self.req.send_json(success_msg)
+    '''
+    Below are utility functions and things that the timer trips.
+    '''
+
     '''
     Called as a closure by the timeout utility. Retries the message if num_retries is low.
     '''
-    def timeout_on_req(self, brokerId):
+    def timeout_fn(self, brokerId):
+        retry_info = self.broker_requests.get(brokerId)
+        if retry_info is None:
+            return
 
+        self.log_info('Request id {0} timed out. Retrying ({1} of 4)'.format(brokerId, retry_info['num_retries']))
+        self.retry_message(retry_info, self.id_for_raft)
 
+        # Update the mapping in self.raft_broker_map and set a new timeout
+        self.raft_broker_map[self.id_for_raft] = brokerId
+        self.id_for_raft += 1
+        retry_info['timeout'] = self.loop.add_timeout(self.loop.time() + self.msg_timeout, lambda: self.timeout_fn(brokerId))
+
+    # Despite best attempts, unable to get a good response back from Raft. Send an error back.
+    def fail_request(self, req_info):
+        del self.broker_requests[req_info['id']]
+        self.loop.remove_timeout(req_info['timeout'])
+        failure_message = {
+                'type': req_info['type'] + 'Response',
+                'id': req_info['id'],
+                'error': 'Timed out'
+        }
+        self.req.send_json(failure_message)
 
     def retry_message(self, retry_info, retry_id):
         if retry_info['num_retries'] > self.max_retries:
@@ -155,4 +197,5 @@ class ClientNode(object):
         }
         self.req.send_json(retry_msg)
 
-
+    def log_info(self, s):
+        self.req.send_json({'type': 'log', 'info': s})

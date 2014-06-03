@@ -25,7 +25,7 @@ class RaftNode(RaftBaseNode):
         if self.raft_state != 'leader':
             redirect_msg = {
                     'type': 'redirect',
-                    'destination': msg['source'],
+                    'destination': [msg['source']],
                     'redir_target': self.raft_leader,
                     'id': msg['id']
             }
@@ -57,7 +57,7 @@ class RaftNode(RaftBaseNode):
         if self.raft_state != 'leader':
             redirect_msg = {
                     'type': 'redirect',
-                    'destination': msg['source'],
+                    'destination': [msg['source']],
                     'redir_target': self.raft_leader,
                     'id': msg['id']
             }
@@ -88,7 +88,8 @@ class RaftNode(RaftBaseNode):
         
         success_msg = {
                 'type': 'set_success',
-                'destination': log_entry['source'],
+                'destination': [log_entry['source']],
+                'id': log_entry['id']
         }
         self.req.send_json(success_msg)
 
@@ -101,9 +102,10 @@ class RaftNode(RaftBaseNode):
         req_info = self.getReq_info[getId]
         response = {
                 'type': 'get_success',
-                'destination': req_info['source'],
+                'destination': [req_info['source']],
                 'key': req_info['key'],
-                'value': self.data_store.get(req_info['key'])
+                'value': self.data_store.get(req_info['key']),
+                'id': getId
         }
         self.req.send_json(response)
         del self.getReq_info[getId]
