@@ -144,9 +144,12 @@ class ClientNode(object):
     def handle_success(self, msg):
         success_type = msg['type'][:3]
         req_info = self.broker_requests[self.raft_broker_map[msg['id']]]
+        # If we've already sent one success message, don't bother doing another.
+        if req_info.get('successful'):
+            return
+
         self.loop.remove_timeout(req_info['timeout'])
-        del self.broker_requests[req_info['id']]
-        
+
         success_msg = {
                 'type': success_type + 'Response',
                 'id': req_info['id']
@@ -157,6 +160,8 @@ class ClientNode(object):
             success_msg['value'] = req_info['value']
 
         self.req.send_json(success_msg)
+        print 'Success in request {0}'.format(req_info['id'])
+        req_info['successful'] = True
     '''
     Below are utility functions and things that the timer trips.
     '''

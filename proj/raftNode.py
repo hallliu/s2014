@@ -112,8 +112,6 @@ class RaftNode(RaftBaseNode):
                 'id': getId
         }
         self.req.send_json(response)
-        print 'GET successful'
-        del self.getReq_info[getId]
 
     '''
     For good measure, override revert_state so we can clear getReq_info.
