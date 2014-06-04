@@ -1,0 +1,17 @@
+# demonstrates multiple clients interacting with the server
+start C1 --peer-names A1,A2,A3,A4,A5 --client
+start C2 --peer-names A1,A2,A3,A4,A5 --client
+start C3 --peer-names A1,A2,A3,A4,A5 --client
+start A1 --peer-names A2,A3,A4,A5
+start A2 --peer-names A1,A3,A4,A5
+start A3 --peer-names A1,A2,A4,A5
+start A4 --peer-names A1,A2,A3,A5
+start A5 --peer-names A1,A2,A3,A4
+set C1 k1 55
+get C2 k1
+get C3 k1
+stop A1
+stop A2
+stop A3
+stop A4
+stop A5

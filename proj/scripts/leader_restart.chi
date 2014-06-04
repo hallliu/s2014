@@ -1,0 +1,23 @@
+# knock out the leader and let it come back as a blank state later
+start CL --peer-names A1,A2,A3,A4,A5 --client
+start A1 --peer-names A2,A3,A4,A5 --likely_leader
+start A2 --peer-names A1,A3,A4,A5
+start A3 --peer-names A1,A2,A4,A5
+start A4 --peer-names A1,A2,A3,A5
+start A5 --peer-names A1,A2,A3,A4
+set CL k1 121
+get CL k1
+stop A1
+get CL k1
+set CL k2 23
+set CL k1 100
+start A1 --peer-names A2,A3,A4,A5
+get CL k1
+get CL k2
+set CL k1 99
+get CL k1
+stop A1
+stop A2
+stop A3
+stop A4
+stop A5

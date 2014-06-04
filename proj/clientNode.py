@@ -60,7 +60,8 @@ class ClientNode(object):
 
         # IDs for use in Raft. Incremented once every time a request is sent off (unless
         # it's a redirect.
-        self.id_for_raft = 0
+        self._id_for_raft = 0
+
         # Contains a mapping of raft ids to broker ids. 
         self.raft_broker_map = {}
 
@@ -103,7 +104,7 @@ class ClientNode(object):
                 'id': self.id_for_raft
         }
         self.req.send_json(get_msg)
-        self.id_for_raft += 1
+        self._id_for_raft += 1
 
     def handle_set(self, msg):
         timeout = self.loop.add_timeout(self.loop.time() + self.msg_timeout, lambda: self.timeout_fn(msg['id']))
@@ -126,7 +127,7 @@ class ClientNode(object):
                 'id': self.id_for_raft
         }
         self.req.send_json(set_msg)
-        self.id_for_raft += 1
+        self._id_for_raft += 1
 
     def handle_redirect(self, msg):
         # Just update who we think the leader is, then resend. If too many redirects, fail.
@@ -182,7 +183,7 @@ class ClientNode(object):
 
         # Update the mapping in self.raft_broker_map and set a new timeout
         self.raft_broker_map[self.id_for_raft] = brokerId
-        self.id_for_raft += 1
+        self._id_for_raft += 1
         retry_info['timeout'] = self.loop.add_timeout(self.loop.time() + self.msg_timeout, lambda: self.timeout_fn(brokerId))
 
     # Despite best attempts, unable to get a good response back from Raft. Send an error back.
@@ -211,6 +212,13 @@ class ClientNode(object):
                 'id': retry_id
         }
         self.req.send_json(retry_msg)
+
+    '''
+    Generate unique id to send into Raft
+    '''
+    @property
+    def id_for_raft(self):
+        return self.name + str(self._id_for_raft)
 
     def log_info(self, s):
         self.req.send_json({'type': 'log', 'info': s})
