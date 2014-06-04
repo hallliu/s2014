@@ -121,7 +121,6 @@ class RaftBaseNode(object):
     # The heartbeat will consult nextIndex and send along entries as well, if
     # there are any to be sent.
     def leader_heartbeat(self):
-        print 'leader heartbeat from {0}'.format(self.name)
         if self.raft_state != 'leader':
             return
         
@@ -159,9 +158,9 @@ class RaftBaseNode(object):
         # going for candidacy again soon. Thus, reset the timeout.
         self.reset_timeout()
 
-        self.log_info('Our term={0}, their term={1}'.format(self.raft_term, msg['term']))
         # Check if term is larger and change own status as appropriate
         if msg['term'] > self.raft_term:
+            self.log_info('reqvote: Becoming follower because {0} has term {1} and we have term {2}'.format(msg['source'], msg['term'], self.raft_term))
             self.revert_state(msg['term'])
 
         # Decide whether to grant the vote
@@ -191,6 +190,7 @@ class RaftBaseNode(object):
     def handle_votereply(self, msg):
         # If term leads ours, fall back to follower and exit
         if msg['term'] > self.raft_term:
+            self.log_info('votereply: Becoming follower because someone has term {0} and we have term {1}'.format(msg['term'], self.raft_term))
             self.revert_state(msg['term'])
             return
         # If term is lagging or no longer a candidate, just ignore the message.
@@ -208,6 +208,8 @@ class RaftBaseNode(object):
         # Check terms before doing anything else. Note that if the terms are equal and self is
         # in follower mode, revert_state does absolutely nothing.
         if self.raft_term <= msg['term']:
+            if self.raft_state != 'follower':
+                self.log_info('AppendEntries: Becoming follower because {0} has term {1} and we have term {2}'.format(msg['source'], msg['term'], self.raft_term))
             self.revert_state(msg['term'])
 
         reject_msg = {
@@ -258,7 +260,6 @@ class RaftBaseNode(object):
 
             self.raft_log.extend(rcvd_entries)
             self.log_info('Successfully appended {0} entries to own log'.format(len(rcvd_entries)))
-            self.log_info(str(rcvd_entries[0]))
 
             # Take care of updating commitIndex and actually commiting the commands that we got sent.
             if msg['leaderCommit'] > self.raft_commitIndex:
@@ -284,6 +285,7 @@ class RaftBaseNode(object):
     def handle_appendentry_reply(self, msg):
         # Check terms (like always...)
         if msg['term'] > self.raft_term:
+            self.log_info('appendentry_reply: Becoming follower because {0} has term {1} and we have term {2}'.format(msg['source'], msg['term'], self.raft_term))
             self.revert_state(msg['term'])
 
         # If we're not a leader for some reason, just drop the message.
@@ -328,6 +330,7 @@ class RaftBaseNode(object):
             if self.raft_log[tentative_commit]['term'] == self.raft_term:
                 for i in range(self.raft_commitIndex + 1, tentative_commit + 1):
                     self.commit_entry(self.raft_log[i])
+                self.log_info('Leader committed log entries {0}-{1} inclusive at term {2}'.format(self.raft_commitIndex+1, tentative_commit, self.raft_term))
                 self.raft_commitIndex = tentative_commit
         
     '''
@@ -380,4 +383,4 @@ class RaftBaseNode(object):
         pass
 
     def log_info(self, s):
-        self.req.send_json({'type': 'log', 'info': s})
+        self.req.send_json({'type': 'log', 'info': s, 'term': self.raft_term})

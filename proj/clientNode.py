@@ -50,7 +50,7 @@ class ClientNode(object):
         }
 
         self.max_retries = 4
-        self.msg_timeout = 0.3
+        self.msg_timeout = 0.6
         # Randomly pick a leader to interface with. If we're wrong, oh well.
         self.raft_leader = self.peers[0] 
 

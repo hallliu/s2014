@@ -31,6 +31,7 @@ class RaftNode(RaftBaseNode):
                     'id': msg['id']
             }
             self.req.send_json(redirect_msg)
+            self.log_info('Redirected client to {0}'.format(self.raft_leader))
             return
         
         # Send out a heartbeat to make sure we're still the leader.
@@ -56,6 +57,7 @@ class RaftNode(RaftBaseNode):
                 'source': msg['source'],
                 'key': msg['key']
         }
+        self.log_info('Received client GET for key {0}, id {1}'.format(msg['key'], msg['id']))
 
     def handle_clientset(self, msg):
         if self.raft_state != 'leader':
@@ -66,6 +68,7 @@ class RaftNode(RaftBaseNode):
                     'id': msg['id']
             }
             self.req.send_json(redirect_msg)
+            self.log_info('Redirected client to {0}'.format(self.raft_leader))
             return
         
         # Insert the set request into our log and immediately trigger a heartbeat
@@ -78,6 +81,7 @@ class RaftNode(RaftBaseNode):
             'source': msg['source'],
             'id': msg['id']
         })
+        self.log_info('Received client SET for key {0} to value {1}, id {2}'.format(msg['key'], msg['value'], msg['id']))
         self.leader_heartbeat()
 
     def commit_entry(self, log_entry):
