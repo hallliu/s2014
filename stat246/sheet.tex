@@ -14,6 +14,7 @@
 \nc{\ep}{\epsilon}
 \DeclareMathOperator{\tr}{tr}
 \DeclareMathOperator{\cov}{cov}
+\nc{\h}[1]{\widehat{#1}}
 \begin{document}
 \small
 Bayes classification rule for discrete cases: maximize $P(Y=m|X)$ over all possible values $m$. Simplifies to maximizing $P(X|Y=m)P(Y=m)$ because $P(X)$ is invariant across $m$s. Useful to think about this in terms of regions in the space that get classified into certain areas. Expected loss is integral of loss times probability over entire space. Useful to evaluate this in terms of the regions.
@@ -28,7 +29,9 @@ Exponential family: distributions can be written as $p(x)=h(x)g(\eta)\exp(\eta^T
 
 A few distributions as exponential families: $N(\mu,\Sigma)$ has $h=(2\pi)^{-d/2}$, $g=|\Sigma|^{-d/2}\exp(-\frac{1}{2}\mu^T\Sigma^{-1}\mu)$, $\eta=\openm\Sigma^{-1}\mu\\-\frac{1}{2}\text{flat}(\Sigma^{-1})\closem$, and $T(x)=\openm x\\\text{flat}(xx^T)\closem$. Binomial with parameters $n,p$ is $\binom{n}{x}\exp\left(x\log\left(\frac{p}{1-p}\right)+n\log(1-p)\right)$. Gamma distr with shape $\alpha$ and rate $\beta$ has $h(x)=1$,$g(\eta)=\frac{\Gamma(\alpha)}{\beta^\alpha}$, $\eta=\openm\alpha-1\\-\beta\closem$, and $u(x)=\openm\log x\\x\closem$. Beta distribution with parameters $\alpha,\beta$ has $h(x)=\frac{1}{x(1-x)}$, $g(\eta)=\frac{\Gamma(\alpha)\Gamma(\beta)}{\Gamma(\alpha+\beta)}$, $\eta=\openm\alpha\\\beta\closem$, and $u(x)=\openm\log x\\\log(1-x)\closem$.
 
-EM algorithm steps: First write the complete-data log likelihood. Then take the expectation over the hidden variable conditioned by the previous iteration and the data, which will give an expression involving the conditional density of $Y$ and a sum. Finally, take derivatives to get a ML estimate of this expectation and update parameters. If using Bayesian priors to do a MAP estimation, maximize the expectation of the log-likelihood plus the log of the prior. Probably should make it a conjugate prior.
+EM algorithm steps: First write the complete-data log likelihood. Then take the expectation over the hidden variable conditioned by the previous iteration and the data, which will give an expression involving the conditional density of $Y$ and a sum. Write it in terms of indicator functions. Finally, take derivatives to get a ML estimate of this expectation and update parameters. If using Bayesian priors to do a MAP estimation, maximize the expectation of the log-likelihood plus the log of the prior. Probably should make it a conjugate prior.
+
+Walkthrough of EM on Bernoulli mixture: suppose there are $M$ classes, each class has Bernoulli probability $p_i$, each class with prob $\pi_i$. The complete distribution for $Y=m$ is $\pi_mp_m^x(1-p_m)^{1-x}$. Complete data log-likelihood of data points $1..n$ is $\sum_{i=1}^n\pi_{Y_i}p_{Y_i}^{X_i}(1-p_{Y_i})^{1-X_i}$. Writing it with indicator functions gives $\sum_{i=1}^N\sum_{j=1}^MI(Y_i=j)\pi_jp_j^{X_i}(1-p_j)^{1-X_i}$. 
 
 Entropy of a distribution $q$ is $H(q)=-\sum_yq(y)\log q(y)$. KL-divergence is $K(q\|p)=-H(q)-E_q(\log p)=\sum_y\log\frac{q(y)}{p(y)}q(y)$. Jensen's inequality for a convex $f$ states that $f\left(\frac{\sum a_ix_i}{\sum a_i}\right)\leq\frac{\sum a_if(x_i)}{\sum a_i}$, and reversed for concave. If convexity is strict, then equality holds iff all the $x$s are equal.
 
@@ -36,5 +39,34 @@ Graphical models: modeled by a DAG that induces a chain of multiplied conditiona
 
 A set $C$ $d$-separates $A$ and $B$ if for any path from $A$ to $B$, there's either a T-T or H-T node in the path that's in $C$ or there's a H-H node in the path which is not in $C$ and its descendants are not in $C$/
 
-Hidden Markov models -- insert graph below
+Hidden Markov models: Hidden vars have $L$ states, observed ones have $R$ states. Let $A$ be the transition matrix for the hidden vars, and $B$ be the transition from hidden to observed (so $A_{ij}$ is $P(Y_{n+1}=j|Y_n=i)$ and same with $B$). Marginal on the observed variables involves summing over all possible combinations of the hidden ones, which is exponential. Let $\pi$ be the initial distribution of the $Y$s.
+
+Recursive formula: let $\alpha_t(l)=P(X_{1:t}=r_{1:t}, Y_t=l)$. Then $\alpha_1(l)=P(X_1=r_1,Y_1=l)=\pi_lB_{lr_1}$. We have the recursion $\alpha_{t+1}(l)=\sum_{l'=1}^LA_{l'l}B_{l'r_{t+1}}\alpha_t(l')$. Total computational effort is $TL^2$ for the marginal (finding $\alpha_T$ is as good as finding the marginal). Similar with the backwards recursion -- $\beta_t(l)=P(X_{t+1:T}=r_{t+1}:T|Y_t=l)$ with the identity $\beta_t(l)=\sum_{l'=1}^L\beta_{t+1}(l')B_{l'r_{t+1}}A_{ll'}$. 
+
+MLE for fully observed is $\h{A}_{ll'}=\frac{\sum_tI(Y_t=l,Y_{t+1}=l')}{\sum_tI(Y_t=l)}$ and something similar for $\h{B}$. For $Y$s unobserved, replace $I(Y_t=l,Y_{t+1}=l')$ with $P(Y_t=l,Y_{t+1}=l'|\Theta,X)$ and all other indicator functions the same way. We have $P(Y_t=l,Y_{t+1}=l'|X)=\frac{P(Y_t=l,Y_{t+1}=l',X)}{P(X)}$. The denom can be computed from the forwards/backwards algorithm. The numerator is 
+\begin{align*}
+    P(X_{1:t},Y_t=l,X_{t+1:T},Y_{t+1}=l')&=P(X_{t+1:T},Y_{t+1}=l'|X_{1:t},Y_t=l)P(X_{1:t},Y_t=l)\\
+                                         &=P(X_{t+1:T},Y_{t+1}=l'|Y_t=l)\alpha_t(l)\text{ by $d$-separation}\\
+                                         &=P(X_{t+1:T}|Y_{t+1}=l',Y_t=l)P(Y_{t+1}=l'|Y_t=l)\alpha_t(l)\\
+                                         &=P(X_{t+1:T}|Y_{t+1}=l')A_{ll'}\alpha_t(l)\text{ by $d$-separation again}\\
+                                         &=P(X_{t+1}|Y_{t+1}=l')P(X_{t+2:T}|Y_{t+1}=l')A_{ll'}\alpha_t(l)\text{ by $d$-sep, cond indep}\\
+                                         &=B_{l',r_{t+1}}\beta_{t+1}(l')A_{ll'}\alpha_t(l)\\
+\end{align*}
+To do prediction of the $Y_{1:T}$, compute the argmax of $P(Y_{1:T}|X_{1:T})$ given the already-estimated parameters. Write out the probability of a sequence $l_{1:T}$ and observe that it can be written as a sum $\sum_{t=1}^{T-1}\Psi_t(l_t,l_{t+1})$, then we can do dynamic programming.
+
+Distributions Markov wrt undirected graphs: let $C$ be maximal cliques of some graph. A distribution that's Markov has density $\frac{1}{Z}\exp\left(\sum_C\psi_C(X_C)\right)$ where $\psi_C$ is an arbitrary function and $X_C$ is the set of variables corresponding to the clique. Another defn is that if a set separates two other sets in the graph, then the two sets are conditionally independent given the separating set. Proof of one-way equivalence is:
+
+First, suppose that $C$ is empty. Then, the graph is disconnected, and $A$ and $B$ lie in different connected components, which means that no maximal cliques contain both elements from $A$ and elements from $B$. We can then factor the pdf into one part containing only variables from $A$ and not $B$ and one part only variables from $B$ and not $A$, so $A$ and $B$ are independent. If $C$ is nonempty, let $\conj{A}$ be the set of elements reachable from $A$ without going through $C$ (this excludes $C$ itself). Note that $A\subset \conj{A}$ and $B\cap\conj{A}=\emptyset$ by the assumption that $C$ separates $A$ and $B$. Further, every maximal clique which contains elements of $\conj{A}$ must not contain elements of $\conj{A}^c$ which are not in $C$ (this would violate the separation criterion) and conversely any maximal clique which contains elements of $\conj{A}^c$ must not contain any elements of $\conj{A}$ unless all the elements of $\conj{A}^c$ in that clique are also in $C$. 
+
+Thus, we have that any maximal clique must be either a subset of $\conj{A}\cup C$ or a subset of $\conj{A}^c$, which means that the probability factors into two pieces containing variables from $\conj{A}\cup C$ and $\conj{A}^c$. We can further decompose $\conj{A}^c$ into $(\conj{A}^c-C)\cup C$, the former of which contains $B$. Thus, if we integrate over the complement of $C$ and divide to get the conditional, we get a factored distribution, one piece of which contains all elements of $A$ and no elements of $B$, and the other contains all elements of $B$ and no elements of $A$, which means that we have conditional independence.
+    
+Rejection sampling: let $q$ be a normalized density, $f$ be unnormalized. Pick some $k$ such that $kq\geq f$. Sample $z$ from $q$ then sample $u$ from uniform $(0,kq(z))$. Keep $z$ if $u\leq f(z)$.
+
+Importance sampling: estimates expectations. Have densities $f,g$ and some function $h$. $\int h(x)f(x)dx=\int h(x)\frac{f(x)}{g(x)}g(x)dx=E_g\left(\frac{h(x)f(x)}{g(x)}\right)$. If $h=1$, this becomes $E_g\left(\frac{f(x)}{g(x)}\right)$ and the integral devolves to the normalizing constant. 
+
+MCMC sampling ideas: generate a Markov chain whose stationary distro approaches that of the distro we want. Need irreducibility of the chain (usual defn). Irreducibility implies a unique stationary distro $\pi$. Detailed balance implies that a distro is the stationary one: $\pi_iP_{ij}=\pi_jP_{ji}$. Analog for continuous state is some $K(x_1,x_2)=P(X_{i+1}=x_2|X_i=x_1)$ and $P(X_i=x,X_{i+1}\in B)=\int_B K(x,y)dy$. Strict positivity of $K$ implies irreducibility. Detailed balance is $\pi(x)K(x,y)=\pi(y)K(y,x)$. 
+
+Metropolis-Hastings: let $q_x(y)$ be some proposal density. Begin at state $x$. Draw $y$ from $q$, let $r(x,y)=\min\left(\frac{f(y)q_y(x)}{f(x)q_x(y)},1\right)$. Accept $y$ with probability $r(x,y)$. This defines a MC that satisfies detailed balance for the normalized $f$. Let $\pi$ be the normalized version of $f$. Suppose $f(y)q_y(x)<f(x)q_x(y)$. Then prob that $x\to y$ is $r(x,y)q_x(y)=\frac{\pi(yq_y(x)}{\pi(x)}$. This is $K(x,y)$, so $f(x)K(x,y)=f(y)q_y(x)$. Going through with the other side we have $f(y)K(y,x)=f(y)q_y(x)$ too, so done.
+
+Gibbs sampling is a particular case of Metropolis-Hastings where we sample coordinate-wise $x_j|x_{-j}$. It's a special case of M-H where we use $q_x(y)=0$ if $x$ and $y$ differ in more than 1 coord and otherwise $q_x(y)=p(y_k|x_{-k})$ where $k$ is the coord where they differ. Note $r(x,y)=\frac{p(y)p(x_k|y_{-k})}{p(x)p(y_k|x_{-k})}$. Note we have $p(x)=p(x_k,x_{-k})$ and same for $y$, so numerator is $p(y_k|y_{-k})p(y_{-k})p(x_k|y_{-k})$ and denominator is $p(x_k|x_{-k})p(x_{-k})p(y_k|x_{-k})$, and these end up equal because $x_{-k}=y_{-k}$.
 \end{document}
